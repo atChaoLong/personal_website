@@ -25,6 +25,7 @@ const TRAIL_LIFE = 500;
 const DECAY_MS = 650;
 const REF_SIZE = 200;
 const TRACKING_EM = -0.045;
+const HEIGHT_SCALE = 1.5;
 
 function trackedWidth(ctx: CanvasRenderingContext2D, str: string, tracking: number): number {
   let total = 0;
@@ -117,8 +118,10 @@ export default function PixelText({
       canvas!.height = Math.max(1, Math.floor(height * dpr));
       canvas!.style.width = `${width}px`;
       canvas!.style.height = `${height}px`;
+      canvas!.style.transform = `scaleY(${HEIGHT_SCALE})`;
+      canvas!.style.transformOrigin = "center";
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
-      container!.style.height = `${height}px`;
+      container!.style.height = `${height * HEIGHT_SCALE}px`;
 
       mouseRadius = fontSize * 0.42;
       trailRadius = fontSize * 0.3;
@@ -170,7 +173,7 @@ export default function PixelText({
         return;
       }
       const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const y = (e.clientY - rect.top) / HEIGHT_SCALE;
       mouse = { x, y };
       trail.push({ x, y, time: performance.now() });
       if (trail.length > 16) trail.shift();

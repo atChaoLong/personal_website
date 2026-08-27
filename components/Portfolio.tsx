@@ -5,8 +5,7 @@ import { ArrowDown, ArrowUpRight, Braces, Database, Github, Mail, MapPin, Networ
 import CursorGlow from "./CursorGlow";
 import NeuralNetwork from "./NeuralNetwork";
 import ParticlesBackground from "./ParticlesBackground";
-import PixelField from "./PixelField";
-import PixelText from "./PixelText";
+import SignatureFooter from "./SignatureFooter";
 
 const projects = [
   { index: "01", title: "FinsAgent", kicker: "AGENTIC RAG / FINANCE", description: "面向金融场景的 Agentic RAG 智能问答系统，让任务规划、检索、工具调用与结果验证形成完整闭环。", stack: ["LangGraph", "FastAPI", "Vector DB", "Reranker"], role: "AI SYSTEM DESIGN · FULL-STACK", flow: "PLAN → RETRIEVE → ACT → VERIFY" },
@@ -73,7 +72,7 @@ export default function Portfolio() {
 
       <footer id="contact"><div className="footer-network" aria-hidden="true"><span /><i /><i /><i /><i /></div><span className="section-kicker">OPEN TO COLLABORATION</span><h2>Let&apos;s build something<br /><em>intelligent.</em></h2><p>Have an ambitious product, an AI system, or a difficult engineering problem?</p><div className="footer-actions"><a className="primary-btn" href="mailto:atchaolong@gmail.com"><Mail size={15} /> START A CONVERSATION</a><a className="ghost-btn" href="https://github.com/atchaolong" target="_blank" rel="noreferrer"><Github size={15} /> GITHUB</a></div><div className="footer-bottom"><span>© 2026 JIANG CHAOLONG</span><a href="mailto:atchaolong@gmail.com">ATCHAOLONG@GMAIL.COM</a><a href="#top">BACK TO CORE ↑</a></div></footer>
 
-      <footer className="signature-footer" id="signature"><PixelField /><PixelText text="ATCHAOLONG" className="signature-text" /></footer>
+      <SignatureFooter />
     </main>
   );
 }
