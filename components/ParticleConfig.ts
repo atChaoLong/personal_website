@@ -53,3 +53,23 @@ export const COLORS = {
   cyan: "139,216,255",
   dim: "180,210,198",
 };
+
+/**
+ * Footer — Pixel Field tuning.
+ * Density is a per-cell probability (grid + jitter, never a rigid lattice).
+ * Mobile disables mouse interaction entirely (idle breathing only).
+ */
+export interface PixelFieldTierConfig {
+  cellSize: number;
+  density: number;
+  mouseRadius: number;
+  trailRadius: number;
+  displaceAmount: number;
+  interactive: boolean;
+}
+
+export const PIXEL_FIELD_TIER: Record<DeviceTier, PixelFieldTierConfig> = {
+  desktop: { cellSize: 15, density: 0.62, mouseRadius: 190, trailRadius: 130, displaceAmount: 26, interactive: true },
+  laptop: { cellSize: 18, density: 0.5, mouseRadius: 165, trailRadius: 110, displaceAmount: 21, interactive: true },
+  mobile: { cellSize: 26, density: 0.32, mouseRadius: 0, trailRadius: 0, displaceAmount: 0, interactive: false },
+};
