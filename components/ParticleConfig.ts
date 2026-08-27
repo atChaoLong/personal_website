@@ -18,9 +18,9 @@ export function isCoarsePointer(): boolean {
 
 /** Layer 1 — distant ambient dust, rendered behind the neural network. */
 export const FAR_FIELD_COUNT: Record<DeviceTier, number> = {
-  desktop: 110,
-  laptop: 70,
-  mobile: 30,
+  desktop: 130,
+  laptop: 80,
+  mobile: 28,
 };
 
 /**
