@@ -25,7 +25,7 @@ npm run dev
 
 - 文案集中于 `lib/messages.ts`，默认英文，支持中文、英文；导航栏可即时切换并记住选择。
 - `?lang=zh` / `?lang=en` 可分享指定语言；Cookie 支持服务端首屏语言，本地存储作为偏好备份。
-- `components/OpeningSequence.tsx` 提供 6.1 秒开场：工具节点互联、汇聚成智能体，再以能量扩散接入原有品牌揭幕。每个标签页会话自动播放一次，支持跳过、Esc 和重播；锚点直达与减少动态效果模式自动略过。
+- `components/OpeningSequence.tsx` 提供 8 秒开场；`components/DeductionSequence.tsx` 用错落线索、逐段连线和镜头追踪展现工具间的推导关系，拉远揭示全貌后呈现 AI Agent，再接入原有品牌揭幕。每个标签页会话自动播放一次，支持跳过、Esc 和重播；锚点直达与减少动态效果模式自动略过。
 - `components/AnimatedDiagrams.tsx` 为顺序流程、并行系统和核心架构提供信号动画与独立暂停控制；离开视口、切换后台或启用减少动态效果时暂停。
 - `components/PixelText.tsx` 保留惯性扰动、弹簧归位和点击脉冲，用额外画布空间配合紧凑页尾。
 - 项目使用 Next.js 服务端语言选择，以 `npm run build` 和 `npm run start` 运行，不使用静态导出。

@@ -19,7 +19,7 @@ const en = {
   core: { label: "INTERACTIVE FIELD", figure: "FIG. 001", modes: "Particle shape", orbit: "ORBIT", sphere: "SPHERE", toroidal: "TOROIDAL", spherical: "SPHERICAL", surface: "PARTICLE SURFACE", play: "Play particle animation", pause: "Pause particle animation" },
   signature: { label: "Interactive pixel signature", human: "A HUMAN BEHIND THE SYSTEMS", play: "PLAY A LITTLE.", desktop: "MOVE TO DISRUPT · CLICK TO PULSE", touch: "TAP THE LETTERS TO SEND A PULSE", reduced: "BUILT WITH INTENTION.", home: "EVERY PIXEL FINDS ITS WAY HOME.", action: "ATCHAOLONG interactive signature. Click, Enter or Space to send a particle pulse.", static: "ATCHAOLONG pixel signature. Reduced motion enabled." },
   diagram: { play: "Play diagram animation", pause: "Pause diagram animation", sequence: "SEQUENTIAL FLOW", parallel: "PARALLEL SYSTEMS", system: "Context, tools, state and streaming working with the AI core" },
-  intro: { tools: ["SEARCH", "MEMORY", "TOOLS", "CODE", "VISION", "CONTEXT"], agent: "AI AGENT", assemble: ["DISCOVER CAPABILITIES", "CONNECT THE TOOLS", "ORCHESTRATE INTELLIGENCE"], assemblyLabel: "FROM TOOLS TO AN AGENT", label: "Portfolio opening", skip: "Skip intro", replay: "Replay intro", line: "IDEAS BECOME SYSTEMS.", caption: "JIANG CHAOLONG / AI ENGINEER", stages: ["CONNECTING IDEAS", "SHAPING INTELLIGENCE", "READY TO BUILD"] },
+  intro: { tools: ["SEARCH", "MEMORY", "TOOLS", "CODE", "VISION", "CONTEXT"], agent: "AI AGENT", resolved: "THE CONNECTION BECOMES CLEAR", assemble: ["EVERY SIGNAL LEAVES A TRACE", "ONE CONNECTION LEADS TO ANOTHER", "THE PATTERN EMERGES"], assemblyLabel: "TRACING INTELLIGENCE", label: "Portfolio opening", skip: "Skip intro", replay: "Replay intro", line: "IDEAS BECOME SYSTEMS.", caption: "JIANG CHAOLONG / AI ENGINEER", stages: ["CONNECTING IDEAS", "SHAPING INTELLIGENCE", "READY TO BUILD"] },
 };
 export type Messages = typeof en;
 const zh: Messages = {
@@ -41,6 +41,6 @@ const zh: Messages = {
   core: { label: "交互粒子场", figure: "图 001", modes: "粒子形态", orbit: "环形", sphere: "球形", toroidal: "环形曲面", spherical: "球形曲面", surface: "粒子曲面", play: "播放粒子动画", pause: "暂停粒子动画" },
   signature: { label: "交互像素签名", human: "系统背后，是一个创造者。", play: "动手试试看。", desktop: "划过打散字形 · 点击释放脉冲", touch: "轻触文字，释放粒子脉冲", reduced: "每一处，皆有用心。", home: "每一个像素，终将归位。", action: "ATCHAOLONG 交互签名，点击或按 Enter、空格释放粒子脉冲", static: "ATCHAOLONG 像素签名，已减少动态效果" },
   diagram: { play: "播放图表动画", pause: "暂停图表动画", sequence: "顺序处理流程", parallel: "并行产品体系", system: "上下文、工具、状态与数据流协同连接智能核心" },
-  intro: { tools: ["搜索", "记忆", "工具", "代码", "视觉", "上下文"], agent: "AI 智能体", assemble: ["发现能力", "连接工具", "编排智能"], assemblyLabel: "让工具协同，成为智能体", label: "作品集开场", skip: "跳过开场", replay: "重播开场", line: "让想法，成为系统。", caption: "蒋朝龙 / AI 全栈工程师", stages: ["连接想法", "构建智能", "即刻启程"] },
+  intro: { tools: ["搜索", "记忆", "工具", "代码", "视觉", "上下文"], agent: "AI 智能体", resolved: "一切，终于相连", assemble: ["每个信号，都留下线索", "循着关联，找到下一条线索", "答案，在联系中浮现"], assemblyLabel: "循迹，见智能", label: "作品集开场", skip: "跳过开场", replay: "重播开场", line: "让想法，成为系统。", caption: "蒋朝龙 / AI 全栈工程师", stages: ["连接想法", "构建智能", "即刻启程"] },
 };
 export const messages: Record<Locale, Messages> = { zh, en };

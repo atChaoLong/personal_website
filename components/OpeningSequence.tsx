@@ -1,13 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Search, Database, Wrench, Code2, Eye, Layers, BrainCircuit } from "lucide-react";
+import DeductionSequence from "./DeductionSequence";
 import { useLocale } from "./LocaleProvider";
 
-const capabilities = [Search, Database, Wrench, Code2, Eye, Layers];
-const positions = [[120, 140], [400, 60], [680, 140], [680, 340], [400, 420], [120, 340]];
-
-/** A tool-orchestration story followed by the original brand reveal. */
+/** A cinematic deduction followed by the original brand reveal. */
 export default function OpeningSequence({ request, onActiveChange }: { request: number; onActiveChange: (active: boolean) => void }) {
   const { t, ready } = useLocale();
   const [visible, setVisible] = useState(false);
@@ -23,9 +20,9 @@ export default function OpeningSequence({ request, onActiveChange }: { request: 
     if (media.matches) return;
     if (request === 0) {
       if (window.location.hash) return;
-      try { if (sessionStorage.getItem("jcl-intro-v2-seen")) return; } catch { /* Optional preference. */ }
+      try { if (sessionStorage.getItem("jcl-intro-v3-seen")) return; } catch { /* Optional preference. */ }
     }
-    try { sessionStorage.setItem("jcl-intro-v2-seen", "1"); } catch { /* Opening still works. */ }
+    try { sessionStorage.setItem("jcl-intro-v3-seen", "1"); } catch { /* Opening still works. */ }
     previousFocus.current = document.activeElement as HTMLElement | null;
     setPhase("assembly"); setExiting(false); setVisible(true); onActiveChange(true);
     return () => onActiveChange(false);
@@ -36,9 +33,9 @@ export default function OpeningSequence({ request, onActiveChange }: { request: 
     const oldOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     skipRef.current?.focus({ preventScroll: true });
-    const assemble = window.setTimeout(() => setPhase("brand"), 3600);
-    const reveal = window.setTimeout(() => setExiting(true), 5450);
-    const finish = window.setTimeout(complete, 6100);
+    const assemble = window.setTimeout(() => setPhase("brand"), 5500);
+    const reveal = window.setTimeout(() => setExiting(true), 7350);
+    const finish = window.setTimeout(complete, 8000);
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const change = () => { if (media.matches) complete(); };
     media.addEventListener("change", change);
@@ -58,26 +55,7 @@ export default function OpeningSequence({ request, onActiveChange }: { request: 
     if (event.key === "Tab") { event.preventDefault(); skipRef.current?.focus(); }
   }}>
     <div className="opening-shutter opening-shutter-top" aria-hidden="true" /><div className="opening-shutter opening-shutter-bottom" aria-hidden="true" />
-    {phase === "assembly" ? <div className="agent-assembly" aria-hidden="true">
-      <div className="assembly-grid" />
-      <span className="assembly-caption">{t.intro.assemblyLabel}</span>
-      <div className="assembly-stage">
-        <div className="assembly-network">
-          <svg className="assembly-wiring" viewBox="0 0 800 480" preserveAspectRatio="none">
-            <path className="assembly-chain" d="M120 140 L400 60 L680 140 L680 340 L400 420 L120 340 Z" pathLength="100" />
-            {positions.map(([x, y], i) => <g key={i} style={{ "--index": i } as React.CSSProperties}>
-              <path className="assembly-link" d={`M${x} ${y} L400 240`} pathLength="100" />
-              <path className="assembly-signal" d={`M${x} ${y} L400 240`} pathLength="100" />
-            </g>)}
-          </svg>
-          {capabilities.map((Icon, i) => <div className="assembly-tool" key={i} style={{ left: `${positions[i][0] / 8}%`, top: `${positions[i][1] / 4.8}%`, "--index": i } as React.CSSProperties}>
-            <div><Icon size={24} /><span>{t.intro.tools[i]}</span><small>0{i + 1}</small></div>
-          </div>)}
-        </div>
-        <div className="assembly-core"><i /><i /><div><BrainCircuit /><b>{t.intro.agent}</b><span>JCL / 01</span></div></div>
-      </div>
-      <div className="assembly-stages">{t.intro.assemble.map((stage, i) => <span key={i} style={{ "--stage": i } as React.CSSProperties}><i />{stage}</span>)}</div>
-    </div> : <><div className="agent-burst" aria-hidden="true"><i /><i />{Array.from({ length: 24 }, (_, i) => <span key={i} style={{ "--angle": `${i * 15}deg` } as React.CSSProperties} />)}</div>
+    {phase === "assembly" ? <DeductionSequence /> : <><div className="agent-burst" aria-hidden="true"><i /><i />{Array.from({ length: 24 }, (_, i) => <span key={i} style={{ "--angle": `${i * 15}deg` } as React.CSSProperties} />)}</div>
     <div className="opening-content" aria-hidden="true">
       <div className="opening-grid" />
       <div className="opening-orbits"><i /><i /><i /></div>
