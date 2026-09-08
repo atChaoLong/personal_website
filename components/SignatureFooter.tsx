@@ -1,35 +1,15 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
-import PixelField from "./PixelField";
 import PixelText from "./PixelText";
+import { useLocale } from "./LocaleProvider";
 
 export default function SignatureFooter() {
-  const ref = useRef<HTMLElement | null>(null);
-  const reduced = useReducedMotion();
-
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end end"],
-  });
-
-  const curtainY = useTransform(scrollYProgress, [0, 0.2, 1], ["0%", "0%", "-100%"]);
-  const textOpacity = useTransform(scrollYProgress, [0.3, 1], [0, 1]);
-  const textY = useTransform(scrollYProgress, [0.3, 1], [40, 0]);
-
+  const { t: { signature: s } } = useLocale();
   return (
-    <footer className="signature-footer" id="signature" ref={ref}>
-      <PixelField />
-      <motion.div
-        className="signature-text-wrapper"
-        style={reduced ? undefined : { opacity: textOpacity, y: textY }}
-      >
-        <PixelText text="ATCHAOLONG" className="signature-text" />
-      </motion.div>
-      {!reduced && (
-        <motion.div className="signature-curtain" style={{ y: curtainY }} aria-hidden="true" />
-      )}
+    <footer className="signature-footer" id="signature" aria-label={s.label}>
+      <div className="signature-meta"><span><i />{s.human}</span><span>{s.play}</span></div>
+      <div className="signature-text-wrapper"><PixelText text="ATCHAOLONG" actionLabel={s.action} staticLabel={s.static} className="signature-text" /></div>
+      <div className="signature-caption"><span className="signature-hint-desktop">{s.desktop}</span><span className="signature-hint-touch">{s.touch}</span><span className="signature-hint-reduced">{s.reduced}</span><span>{s.home}</span></div>
     </footer>
   );
 }

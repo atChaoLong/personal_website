@@ -1,14 +1,10 @@
-import type { Metadata } from "next";
 import "./globals.css";
+import { cookies } from "next/headers";
 
-export const metadata: Metadata = {
-  title: "JCL.AI — AI Full-Stack Engineer",
-  description: "蒋朝龙的个人作品集：Agentic RAG、多模态 AI、实时智能系统与全栈产品工程。",
-};
-
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const locale = (await cookies()).get("jcl-locale")?.value;
   return (
-    <html lang="zh-CN">
+    <html lang={locale === "zh" ? "zh-CN" : "en"}>
       <body>{children}</body>
     </html>
   );

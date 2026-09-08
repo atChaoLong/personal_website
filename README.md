@@ -1,13 +1,6 @@
 # JCL.AI — AI Full-Stack Portfolio
 
-一个以「AI Systems Laboratory」为概念的超宽屏个人作品集。
-
-## 设计方向
-参考 `awesome-design-md` 的 DESIGN.md 方法论，把设计规则沉淀到根目录 `DESIGN.md`，再用：
-- Void-black / emerald terminal aesthetics
-- Cinematic editorial spacing
-- tsParticles neural constellation
-- Framer Motion micro-interactions
+蒋朝龙的个人作品集：大字号编辑式排版、可交互粒子装置与项目架构展示。
 
 ## 启动
 
@@ -16,12 +9,23 @@ npm install
 npm run dev
 ```
 
-打开 http://localhost:3000
+打开 http://localhost:3000 。生产验证使用 `npm run build`。
 
-## 重要
-当前内容以你提供的旧版简历为基线，尤其是项目、技术栈和经历。你把最新简历补进来后，优先更新：
-- `components/Portfolio.tsx` 的 projects / skills / timeline
-- Hero headline 下方的定位
-- 项目中的真实业务指标（不要虚构）
+## 主要文件
 
-tsParticles 使用官方 `@tsparticles/engine + @tsparticles/slim + @tsparticles/react` 组合。
+- `components/Portfolio.tsx`：个人介绍、项目、技术栈与经历。
+- `components/SignalCore.tsx`：原生 Canvas 粒子曲面，支持形态切换、鼠标倾斜、暂停及减少动态效果。
+- `app/globals.css`：设计变量、页面布局与移动端适配。
+- `components/SignatureFooter.tsx`：保留的交互像素签名。
+- `DESIGN.md`：设计方向与内容约束。
+
+项目内容沿用旧版简历信息；更新时使用真实项目数据，不虚构指标。项目架构展示是已有流程的示意图。
+
+## 中英文与开场
+
+- 文案集中于 `lib/messages.ts`，默认英文，支持中文、英文；导航栏可即时切换并记住选择。
+- `?lang=zh` / `?lang=en` 可分享指定语言；Cookie 支持服务端首屏语言，本地存储作为偏好备份。
+- `components/OpeningSequence.tsx` 提供 6.1 秒开场：工具节点互联、汇聚成智能体，再以能量扩散接入原有品牌揭幕。每个标签页会话自动播放一次，支持跳过、Esc 和重播；锚点直达与减少动态效果模式自动略过。
+- `components/AnimatedDiagrams.tsx` 为顺序流程、并行系统和核心架构提供信号动画与独立暂停控制；离开视口、切换后台或启用减少动态效果时暂停。
+- `components/PixelText.tsx` 保留惯性扰动、弹簧归位和点击脉冲，用额外画布空间配合紧凑页尾。
+- 项目使用 Next.js 服务端语言选择，以 `npm run build` 和 `npm run start` 运行，不使用静态导出。

@@ -1,52 +1,45 @@
-# JCL.AI — DESIGN.md
+# JCL.AI — Design direction
 
-## Concept
-A cinematic, terminal-native portfolio for an AI full-stack engineer. The visual language combines:
-- void-black precision and sparse typography from developer-focused systems
-- emerald signal accents and terminal metadata
-- cinematic negative space and editorial pacing
-- interactive particle constellation as a metaphor for AI systems and connected tools
+An independent AI engineer’s portfolio: oversized editorial typography, a mathematical particle surface, and concrete engineering work. Keep the existing project facts and personal identity.
 
-The site must feel like an **AI systems laboratory**, not a generic developer portfolio.
+## Visual system
+- Near-black canvas `#080b0a`, warm-white text `#edf1e9`, mint accent `#bcf8ce`.
+- Inter for headlines and body, DM Mono for navigation and technical metadata; system and Chinese fallbacks must work without Google Fonts.
+- Generous spacing, square corners and fine borders. Use accent color for emphasis, rather than applying the same green treatment everywhere.
+- The contact section reverses to a full mint surface to give the long page a clear ending.
 
-## Visual rules
-- Canvas: near-black `#050706`
-- Primary accent: emerald `#9affc7`
-- Secondary signal: cyan `#8bd8ff`
-- Text: `#f3f7f4`
-- Muted text: `#8d9992`
-- Borders: translucent emerald/white hairlines
-- Typography: Inter for editorial/display text; DM Mono for labels, metadata, architecture diagrams, and terminal UI.
-- Avoid card-heavy SaaS dashboards.
-- Prefer horizontal rules, oversized typography, sparse grids, technical labels and cinematic whitespace.
-- Use rounded corners sparingly or not at all.
-- Motion should be quiet, physical, and purposeful.
-
-## Hero
-- Full viewport.
-- Particle constellation background with low opacity.
-- Large statement: "I build intelligent systems that ship."
-- Right side: terminal diagnostic panel.
-- Small metadata row at bottom.
-- CTA is rectangular and precise, not pill-shaped.
+## Reading order
+1. Personal positioning and an interactive particle core.
+2. Four selected projects, each with a schematic based on its existing system flow.
+3. Engineer profile and systems thinking.
+4. Technical stack and experience.
+5. Contact and an interactive pixel signature with spring-based displacement.
 
 ## Interaction
-- tsParticles: 60–80 low-opacity particles, subtle links, slow movement, mouse grab interaction.
-- Project rows shift a few pixels on hover.
-- Orbit system rotates slowly.
-- Motion should never overpower reading.
-- Respect reduced-motion preferences in production.
-
-## Content
-Lead with AI engineering outcomes:
-1. Agentic RAG / tool-use systems
-2. Real-time ASR / RTC
-3. Multimodal video generation
-4. 0→1 full-stack product ownership
-
-Do not fabricate metrics. If stronger current metrics are available, replace placeholders with verified numbers.
+- Particle surface: orbit/sphere buttons, pointer-driven tilt, pause/resume.
+- Animation stops offscreen and in background tabs. Respect live reduced-motion preferences.
+- Keep the particle rotation and tilt when pausing; no visual reset.
+- Project details use native disclosure elements with keyboard support.
+- All links and controls have visible keyboard focus. Mobile navigation remains accessible.
+- Signature: fine square pixels sampled from the actual letterforms, with room around the text for displacement. Pointer speed affects the disturbance; leaving releases it into a damped spring return.
+- Click, touch, Enter or Space launch a bounded expanding pulse. Preserve a faint home-position impression so the word remains legible during interaction.
+- The signature stops rendering when settled, offscreen or hidden. Reduced motion renders static text, including after resize and font loading. Keep a text fallback until the canvas is ready.
 
 ## Responsive
-- Desktop: editorial two-column layouts.
-- Mobile: single column, hide decorative terminal if needed.
-- Maintain high contrast and readable body text.
+- Desktop: two-column hero and projects.
+- Mobile: stacked hero, compact particle surface, single-column projects, two-column skill grid.
+- Avoid horizontal overflow, including at 320px viewport width.
+
+## Content integrity
+- Do not invent project metrics, clients, live status, external demos, or architecture details.
+- Architecture previews are schematics, not product screenshots.
+- Preserve parallel relationships (K12 Web + Mini Program + Admin) instead of showing them as sequential pipelines.
+## Languages and opening
+
+- `lib/messages.ts` is the typed Chinese/English dictionary. Keep both locales complete; product and library names may retain their original names.
+- The navigation has a Chinese/English switch. Selection updates the page, title, description and document language, and is remembered locally. `?lang=zh` / `?lang=en` links override the saved preference.
+- The server reads the language cookie for initial rendering to avoid flashing the default language on repeat visits. The Next.js runtime is required; this is not a static export.
+- English is the default for new visitors; explicit language links and saved preferences take precedence.
+- The opening lasts 6.1 seconds: capabilities interlock, converge into an AI Agent, then burst into the original brand reveal. It appears once per tab session and can be skipped, escaped or replayed. Anchor links bypass the automatic opening. Reduced-motion users go straight to the page.
+- Diagrams show sequential signal travel, simultaneous parallel capabilities, and round-trip communication around the AI core. Each diagram can be paused; offscreen and background diagrams stop automatically.
+- Footer signature: compact layout, oversized type and a separate 72px canvas bleed retain the existing spring interaction without allocating large vertical gaps.

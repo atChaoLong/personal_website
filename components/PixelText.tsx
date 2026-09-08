@@ -1,314 +1,224 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { COLORS, isCoarsePointer, prefersReducedMotion } from "./ParticleConfig";
 
-interface GlyphPixel {
-  baseX: number;
-  baseY: number;
-  x: number;
-  y: number;
-  size: number;
-  baseOpacity: number;
-  influence: number;
-  phase: number;
-}
+type Pixel = { homeX: number; homeY: number; x: number; y: number; vx: number; vy: number; alpha: number; seed: number };
+type Pulse = { x: number; y: number; start: number };
+interface PixelTextProps { text: string; actionLabel: string; staticLabel: string; className?: string; fontFamily?: string; fontWeight?: string | number }
 
-interface TrailPoint {
-  x: number;
-  y: number;
-  time: number;
-}
+const MINT = "188,248,206";
+const ICE = "224,255,242";
+const BLEED = 72;
 
-const TARGET_POINTS = 6500;
-const TRAIL_LIFE = 500;
-const DECAY_MS = 650;
-const REF_SIZE = 200;
-const TRACKING_EM = -0.045;
-const HEIGHT_SCALE = 1.5;
-
-function trackedWidth(ctx: CanvasRenderingContext2D, str: string, tracking: number): number {
-  let total = 0;
-  for (const ch of str) total += ctx.measureText(ch).width + tracking;
-  return Math.max(0, total - tracking);
-}
-
-function fillTracked(ctx: CanvasRenderingContext2D, str: string, x: number, y: number, tracking: number): void {
-  let cursor = x;
-  for (const ch of str) {
-    ctx.fillText(ch, cursor, y);
-    cursor += ctx.measureText(ch).width + tracking;
-  }
-}
-
-interface PixelTextProps {
-  text: string;
-  className?: string;
-  fontFamily?: string;
-  fontWeight?: string | number;
-}
-
-/**
- * Signature — pixel-glyph reconstruction (Pixel Field, Option A).
- * The font size is solved so the rendered glyphs fill the full width of
- * the container exactly (and the container height is trimmed to match the
- * glyph bounding box — no wasted space in either axis). Characters are
- * sampled from their real rendered shapes and rebuilt as a dense mosaic of
- * tiny squares. At rest it reads as normal type; the moment the cursor
- * comes near, the pixels that make up the letterforms themselves get
- * pushed apart / displaced — the text is literally what's being
- * disturbed, not a layer drawn over it.
- */
-export default function PixelText({
-  text,
-  className,
-  fontFamily = "Inter, system-ui, sans-serif",
-  fontWeight = 800,
-}: PixelTextProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+/** Sample actual glyphs, then displace their pixels with a damped spring field. */
+export default function PixelText({ text, actionLabel, staticLabel, className, fontFamily = "Inter, system-ui, sans-serif", fontWeight = 800 }: PixelTextProps) {
+  const surfaceRef = useRef<HTMLButtonElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const container = containerRef.current;
+    const surface = surfaceRef.current;
     const canvas = canvasRef.current;
-    if (!container || !canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const ctx = canvas?.getContext("2d");
+    if (!surface || !canvas || !ctx) return;
+    const host = surface, target = canvas, context = ctx;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let width = 0, height = 0, step = 2, radius = 100;
+    let pixels: Pixel[] = [], pulses: Pulse[] = [];
+    let pointer: { x: number; y: number; vx: number; vy: number; time: number } | null = null;
+    let frame = 0, last = 0, visible = false, disposed = false, introduced = false;
+    let previousWidth = 0, previousHeight = 0, previousDpr = 0;
 
-    const reduced = prefersReducedMotion();
-    const coarse = isCoarsePointer();
-    const interactive = !reduced && !coarse;
-
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    let width = 0;
-    let height = 0;
-    let mouseRadius = 80;
-    let trailRadius = 56;
-    let displaceAmount = 24;
-    let pixels: GlyphPixel[] = [];
-    let trail: TrailPoint[] = [];
-    let mouse: { x: number; y: number } | null = null;
-    let running = true;
-    let rafId = 0;
-    let lastTime = performance.now();
-
-    function build() {
-      const containerWidth = container!.clientWidth;
-      if (containerWidth < 2) return;
-
-      const measureCanvas = document.createElement("canvas");
-      const mctx = measureCanvas.getContext("2d");
-      if (!mctx) return;
-      mctx.font = `${fontWeight} ${REF_SIZE}px ${fontFamily}`;
-      const refTracking = REF_SIZE * TRACKING_EM;
-      const refWidth = trackedWidth(mctx, text, refTracking);
-      if (refWidth <= 0) return;
-      const fontSize = (containerWidth / refWidth) * REF_SIZE;
-      const tracking = fontSize * TRACKING_EM;
-
-      mctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-      const metrics = mctx.measureText(text);
-      const ascent = metrics.actualBoundingBoxAscent || fontSize * 0.72;
-      const descent = metrics.actualBoundingBoxDescent || fontSize * 0.08;
-
-      width = containerWidth;
-      height = Math.max(1, Math.ceil(ascent + descent));
-
-      canvas!.width = Math.max(1, Math.floor(width * dpr));
-      canvas!.height = Math.max(1, Math.floor(height * dpr));
-      canvas!.style.width = `${width}px`;
-      canvas!.style.height = `${height}px`;
-      canvas!.style.transform = `scaleY(${HEIGHT_SCALE})`;
-      canvas!.style.transformOrigin = "center";
-      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
-      container!.style.height = `${height * HEIGHT_SCALE}px`;
-
-      mouseRadius = fontSize * 0.42;
-      trailRadius = fontSize * 0.3;
-      displaceAmount = fontSize * 0.16;
-
-      const sample = document.createElement("canvas");
-      sample.width = Math.max(1, Math.floor(width * dpr));
-      sample.height = Math.max(1, Math.floor(height * dpr));
-      const sctx = sample.getContext("2d");
-      if (!sctx) return;
-      sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      sctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-      sctx.textBaseline = "alphabetic";
-      sctx.fillStyle = "#fff";
-      fillTracked(sctx, text, 0, ascent, tracking);
-      const data = sctx.getImageData(0, 0, sample.width, sample.height).data;
-
-      let step = Math.sqrt((width * height) / TARGET_POINTS);
-      step = Math.max(2, Math.min(18, step));
-
-      pixels = [];
-      for (let y = 0; y < height; y += step) {
-        for (let x = 0; x < width; x += step) {
-          const sx = Math.min(sample.width - 1, Math.floor(x * dpr));
-          const sy = Math.min(sample.height - 1, Math.floor(y * dpr));
-          const idx = (sy * sample.width + sx) * 4;
-          const alpha = data[idx + 3];
-          if (alpha < 40) continue;
-          pixels.push({
-            baseX: x,
-            baseY: y,
-            x,
-            y,
-            size: step * 0.88,
-            baseOpacity: Math.min(1, alpha / 255),
-            influence: 0,
-            phase: Math.random() * Math.PI * 2,
-          });
+    function paint() {
+      context.clearRect(0, 0, width, height);
+      // A very faint home-position impression keeps the word readable during disruption.
+      context.fillStyle = `rgba(${MINT},0.075)`;
+      for (const p of pixels) context.fillRect(p.homeX, p.homeY, step * .78, step * .78);
+      for (const p of pixels) {
+        const displacement = Math.hypot(p.x - p.homeX, p.y - p.homeY);
+        const energy = Math.min(1, displacement / 45);
+        const size = step * (.87 - energy * .22);
+        context.fillStyle = `rgba(${energy > .24 ? ICE : MINT},${p.alpha * (.88 - energy * .2)})`;
+        context.fillRect(p.x, p.y, size, size);
+        if (energy > .3) {
+          context.fillStyle = `rgba(${MINT},${energy * .14})`;
+          context.fillRect(p.x - p.vx * 1.4, p.y - p.vy * 1.4, size * .7, size * .7);
         }
       }
-    }
-
-    function onPointerMove(e: PointerEvent) {
-      const rect = canvas!.getBoundingClientRect();
-      const inside =
-        e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
-      if (!inside) {
-        mouse = null;
-        return;
-      }
-      const x = e.clientX - rect.left;
-      const y = (e.clientY - rect.top) / HEIGHT_SCALE;
-      mouse = { x, y };
-      trail.push({ x, y, time: performance.now() });
-      if (trail.length > 16) trail.shift();
-    }
-    function onPointerLeave() {
-      mouse = null;
-    }
-    function onVisibility() {
-      if (document.hidden) stop();
-      else start();
-    }
-    function start() {
-      if (reduced || (running && rafId)) return;
-      running = true;
-      lastTime = performance.now();
-      rafId = requestAnimationFrame(draw);
-    }
-    function stop() {
-      running = false;
-      cancelAnimationFrame(rafId);
-      rafId = 0;
     }
 
     function draw(now: number) {
-      const dt = Math.min(now - lastTime, 48);
-      lastTime = now;
+      frame = 0;
+      if (!visible || document.hidden || disposed) return;
+      const dt = Math.min(last ? (now - last) / 16.667 : 1, 2);
+      last = now;
+      let moving = false;
+      if (!reduced.matches) {
+        pulses = pulses.filter(p => now - p.start < 1400);
+        // Integrate in small steps so high and low refresh-rate screens feel alike.
+        const count = Math.ceil(dt / .5), tick = dt / count;
+        for (let iteration = 0; iteration < count; iteration++) {
+          for (const p of pixels) {
+            let tx = p.homeX, ty = p.homeY;
+            if (pointer) {
+              const dx = p.homeX - pointer.x, dy = p.homeY - pointer.y;
+              const distance = Math.hypot(dx, dy);
+              if (distance < radius) {
+                const influence = Math.pow(1 - distance / radius, 1.5);
+                const nx = distance > .01 ? dx / distance : Math.cos(p.seed * 6.28);
+                const ny = distance > .01 ? dy / distance : Math.sin(p.seed * 6.28);
+                const push = radius * .78 * influence;
+                tx += nx * push + pointer.vx * influence * .9;
+                ty += ny * push + pointer.vy * influence * .9;
+              }
+            }
+            for (const pulse of pulses) {
+              const dx = p.homeX - pulse.x, dy = p.homeY - pulse.y;
+              const distance = Math.hypot(dx, dy);
+              const age = (now - pulse.start) / 1400;
+              const front = age * Math.hypot(width, height);
+              const envelope = Math.max(0, 1 - Math.abs(distance - front) / (radius * .65));
+              const strength = envelope * (1 - age) * radius * 1.35;
+              if (distance > .01) {
+                tx += dx / distance * strength;
+                ty += dy / distance * strength;
+              }
+            }
+            p.vx = (p.vx + (tx - p.x) * .045 * tick) * Math.pow(.83, tick);
+            p.vy = (p.vy + (ty - p.y) * .045 * tick) * Math.pow(.83, tick);
+            p.x += p.vx * tick; p.y += p.vy * tick;
+            if (Math.abs(p.x - tx) + Math.abs(p.y - ty) + Math.abs(p.vx) + Math.abs(p.vy) > .06) moving = true;
+            else { p.x = tx; p.y = ty; p.vx = 0; p.vy = 0; }
+          }
+        }
+        if (pointer) { pointer.vx *= Math.pow(.8, dt); pointer.vy *= Math.pow(.8, dt); }
+      }
+      paint();
+      // No permanent idle loop: wake only for interaction, entry, resize, or unsettled pixels.
+      if (!reduced.matches && (moving || pulses.length)) frame = requestAnimationFrame(draw);
+    }
+    function wake() {
+      if (!frame && visible && !document.hidden && !disposed) {
+        last = 0;
+        frame = requestAnimationFrame(draw);
+      }
+    }
+    function rest() {
+      pointer = null; pulses = [];
+      for (const p of pixels) { p.x = p.homeX; p.y = p.homeY; p.vx = 0; p.vy = 0; }
+    }
 
-      ctx!.clearRect(0, 0, width, height);
-      trail = trail.filter((t) => now - t.time < TRAIL_LIFE);
-
+    function build(force = false) {
+      if (disposed) return;
+      const bounds = host.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (!bounds.width || !bounds.height) return;
+      if (!force && bounds.width === previousWidth && bounds.height === previousHeight && dpr === previousDpr) return;
+      previousWidth = width = bounds.width; previousHeight = bounds.height; height = bounds.height + BLEED * 2; previousDpr = dpr;
+      target.width = Math.round(width * dpr); target.height = Math.round(height * dpr);
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const mask = document.createElement("canvas");
+      mask.width = Math.ceil(width); mask.height = Math.ceil(height);
+      const ink = mask.getContext("2d", { willReadFrequently: true });
+      if (!ink) return;
+      const reference = 200, tracking = -.035;
+      ink.font = `${fontWeight} ${reference}px ${fontFamily}`;
+      const measure = (size: number) => [...text].reduce((total, ch) => total + ink.measureText(ch).width, 0) + Math.max(0, text.length - 1) * size * tracking;
+      const margin = width < 600 ? 8 : 12;
+      const fontSize = Math.min((width - margin * 2) / measure(reference) * reference, (height - BLEED * 2) * .96);
+      ink.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+      const metrics = ink.measureText(text);
+      const ascent = metrics.actualBoundingBoxAscent || fontSize * .75;
+      const descent = metrics.actualBoundingBoxDescent || 0;
+      const stretch = 1.28;
+      const textHeight = (ascent + descent) * stretch;
+      let x = (width - measure(fontSize)) / 2;
+      ink.translate(0, (height - textHeight) / 2);
+      ink.scale(1, stretch);
+      ink.textBaseline = "alphabetic";
+      ink.fillStyle = "white";
+      for (const ch of text) { ink.fillText(ch, x, ascent); x += ink.measureText(ch).width + fontSize * tracking; }
+      const data = ink.getImageData(0, 0, mask.width, mask.height).data;
+      // Dense small squares, not the old stretched rectangular mosaic.
+      step = Math.max(1.25, Math.sqrt(width * textHeight / 23000));
+      radius = Math.max(48, Math.min(155, width * .12));
+      pixels = [];
+      for (let y = step / 2; y < height; y += step) {
+        for (let x = step / 2; x < width; x += step) {
+          const alpha = data[(Math.floor(y) * mask.width + Math.floor(x)) * 4 + 3] / 255;
+          if (alpha < .35) continue;
+          const seed = (Math.sin(x * 12.9898 + y * 78.233) * 43758.5453) % 1;
+          pixels.push({ homeX: x, homeY: y, x, y, vx: 0, vy: 0, alpha, seed });
+        }
+      }
+      host.dataset.ready = "true";
+      rest(); paint(); wake();
+    }
+    function enter() {
+      if (introduced || reduced.matches || !pixels.length) return;
+      introduced = true;
       for (const p of pixels) {
-        let targetInf = 0;
-        let dirX = 0;
-        let dirY = 0;
-
-        if (mouse) {
-          const dx = p.baseX - mouse.x;
-          const dy = p.baseY - mouse.y;
-          const d = Math.hypot(dx, dy);
-          if (d < mouseRadius) {
-            const inf = Math.pow(1 - d / mouseRadius, 1.4);
-            if (inf > targetInf) {
-              targetInf = inf;
-              const len = d || 1;
-              dirX = dx / len;
-              dirY = dy / len;
-            }
-          }
-        }
-
-        for (const tp of trail) {
-          const age = now - tp.time;
-          if (age > TRAIL_LIFE) continue;
-          const dx = p.baseX - tp.x;
-          const dy = p.baseY - tp.y;
-          const d = Math.hypot(dx, dy);
-          if (d < trailRadius) {
-            const life = 1 - age / TRAIL_LIFE;
-            const inf = Math.pow(1 - d / trailRadius, 1.4) * life * 0.6;
-            if (inf > targetInf) {
-              targetInf = inf;
-              const len = d || 1;
-              dirX = dx / len;
-              dirY = dy / len;
-            }
-          }
-        }
-
-        const attackEase = 1 - Math.pow(0.001, dt / 120);
-        const releaseEase = 1 - Math.pow(0.001, dt / DECAY_MS);
-        const ease = targetInf > p.influence ? attackEase : releaseEase;
-        p.influence += (targetInf - p.influence) * ease;
-
-        p.x = p.baseX + dirX * displaceAmount * p.influence;
-        p.y = p.baseY + dirY * displaceAmount * p.influence;
-
-        const twinkle = reduced ? 0 : Math.sin(now * 0.0012 + p.phase) * 0.03;
-        const opacity = Math.min(1, Math.max(0, p.baseOpacity * (1 - p.influence * 0.6) + twinkle));
-        const size = p.size * (1 - p.influence * 0.25);
-
-        ctx!.fillStyle = `rgba(${COLORS.core},${opacity})`;
-        ctx!.fillRect(p.x - size / 2, p.y - size / 2, size, size);
+        p.x += Math.sin(p.seed * 17) * 22;
+        p.y += Math.cos(p.seed * 11) * 30;
       }
-
-      if (running && !reduced) rafId = requestAnimationFrame(draw);
     }
-
+    function move(event: PointerEvent) {
+      if (reduced.matches || event.pointerType === "touch") return;
+      const rect = host.getBoundingClientRect();
+      const x = event.clientX - rect.left, y = event.clientY - rect.top + BLEED, now = performance.now();
+      const dt = pointer ? Math.max(8, now - pointer.time) / 16.667 : 1;
+      pointer = { x, y, vx: pointer ? Math.max(-45, Math.min(45, (x - pointer.x) / dt)) : 0, vy: pointer ? Math.max(-45, Math.min(45, (y - pointer.y) / dt)) : 0, time: now };
+      wake();
+    }
+    function leave() { pointer = null; wake(); }
+    function pulse(event: MouseEvent) {
+      if (reduced.matches) return;
+      const rect = host.getBoundingClientRect();
+      const x = event.detail === 0 ? width / 2 : event.clientX - rect.left;
+      const y = event.detail === 0 ? height / 2 : event.clientY - rect.top + BLEED;
+      pulses.push({ x, y, start: performance.now() });
+      pulses = pulses.slice(-3);
+      wake();
+    }
+    function visibility() {
+      cancelAnimationFrame(frame); frame = 0;
+      rest(); paint();
+      if (!document.hidden) wake();
+    }
+    function preference() {
+      host.setAttribute("aria-label", reduced.matches ? staticLabel : actionLabel);
+      host.setAttribute("aria-disabled", String(reduced.matches));
+      rest(); paint(); wake();
+    }
     build();
-    if (typeof document !== "undefined" && "fonts" in document) {
-      document.fonts.ready.then(() => build()).catch(() => {});
-    }
-
-    const resizeObserver = new ResizeObserver(build);
-    resizeObserver.observe(container);
-
-    const intersectionObserver = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) start();
-        else stop();
-      },
-      { threshold: 0.05 }
-    );
-    intersectionObserver.observe(canvas);
-
-    if (interactive) {
-      window.addEventListener("pointermove", onPointerMove, { passive: true });
-      window.addEventListener("pointerleave", onPointerLeave);
-      window.addEventListener("blur", onPointerLeave);
-    }
-    document.addEventListener("visibilitychange", onVisibility);
-
-    if (reduced) {
-      draw(performance.now());
-    } else {
-      rafId = requestAnimationFrame(draw);
-    }
-
+    preference();
+    const resize = new ResizeObserver(() => build());
+    resize.observe(host);
+    const intersection = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) { enter(); wake(); }
+      else { cancelAnimationFrame(frame); frame = 0; rest(); paint(); }
+    }, { threshold: .15 });
+    intersection.observe(host);
+    document.fonts.ready.then(() => { if (!disposed) build(true); });
+    host.addEventListener("pointermove", move, { passive: true });
+    host.addEventListener("pointerleave", leave);
+    host.addEventListener("pointercancel", leave);
+    host.addEventListener("click", pulse);
+    window.addEventListener("blur", leave);
+    document.addEventListener("visibilitychange", visibility);
+    reduced.addEventListener("change", preference);
     return () => {
-      running = false;
-      cancelAnimationFrame(rafId);
-      resizeObserver.disconnect();
-      intersectionObserver.disconnect();
-      if (interactive) {
-        window.removeEventListener("pointermove", onPointerMove);
-        window.removeEventListener("pointerleave", onPointerLeave);
-        window.removeEventListener("blur", onPointerLeave);
-      }
-      document.removeEventListener("visibilitychange", onVisibility);
+      disposed = true; cancelAnimationFrame(frame);
+      resize.disconnect(); intersection.disconnect();
+      host.removeEventListener("pointermove", move); host.removeEventListener("pointerleave", leave);
+      host.removeEventListener("pointercancel", leave); host.removeEventListener("click", pulse);
+      window.removeEventListener("blur", leave); document.removeEventListener("visibilitychange", visibility);
+      reduced.removeEventListener("change", preference);
     };
-  }, [text, fontFamily, fontWeight]);
+  }, [text, fontFamily, fontWeight, actionLabel, staticLabel]);
 
-  return (
-    <div ref={containerRef} className={`pixel-text ${className ?? ""}`}>
-      <canvas ref={canvasRef} className="pixel-text-canvas" aria-hidden="true" />
-      <span className="sr-only">{text}</span>
-    </div>
-  );
+  return <button type="button" ref={surfaceRef} className={`pixel-text ${className ?? ""}`} aria-label={actionLabel}>
+    <canvas ref={canvasRef} className="pixel-text-canvas" aria-hidden="true" />
+    <span className="pixel-text-fallback" aria-hidden="true">{text}</span>
+  </button>;
 }
