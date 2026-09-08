@@ -17,6 +17,7 @@ npm run dev
 - `components/SignalCore.tsx`：原生 Canvas 粒子曲面，支持形态切换、鼠标倾斜、暂停及减少动态效果。
 - `app/globals.css`：设计变量、页面布局与移动端适配。
 - `components/SignatureFooter.tsx`：保留的交互像素签名。
+- `components/FooterReveal.tsx`：联系区覆盖在签名上，继续滚动时像幕布一样掀开；支持反向滚动、签名锚点和键盘访问。
 - `DESIGN.md`：设计方向与内容约束。
 
 项目内容沿用旧版简历信息；更新时使用真实项目数据，不虚构指标。项目架构展示是已有流程的示意图。

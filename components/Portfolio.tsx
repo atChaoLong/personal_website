@@ -6,7 +6,7 @@ import { ArrowDown, ArrowUpRight, Braces, Database, Github, Mail, MapPin, Networ
 import { LocaleProvider, useLocale } from "./LocaleProvider";
 import OpeningSequence from "./OpeningSequence";
 import SignalCore from "./SignalCore";
-import SignatureFooter from "./SignatureFooter";
+import FooterReveal from "./FooterReveal";
 import { AnimatedFlow, SystemsDiagram } from "./AnimatedDiagrams";
 import type { Locale } from "@/lib/messages";
 
@@ -76,8 +76,7 @@ function PortfolioContent() {
       </section>
       <section className="section" id="stack"><div className="section-label"><span>{t.stack.label}</span><span>{t.stack.meta}</span></div><div className="section-heading"><h2>{t.stack.title[0]}<br /><em>{t.stack.title[1]}</em></h2><p>{t.stack.description}</p></div><div className="skills">{t.stack.groups.map((name, i) => { const Icon = icons[i]; return <motion.article className="skill" key={i} initial={{ opacity: 0, y: 14 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * .04 }}><span className="skill-num">{number(i)}</span><Icon size={18} /><h3>{name}</h3><div>{t.stack.skills[i].map((skill, n) => <span key={n}>{skill}</span>)}</div></motion.article>; })}</div></section>
       <section className="section experience" id="experience"><div className="section-label"><span>{t.experience.label}</span><span>{t.experience.meta}</span></div><div className="section-heading"><h2>{t.experience.title[0]}<br /><em>{t.experience.title[1]}</em></h2><p>{t.experience.description}</p></div><div className="timeline-list">{t.experience.rows.map((row, i) => <div key={row.year}><time>{row.year}</time><span>{number(2 - i)}</span><b>{row.title}</b><p>{row.description}</p></div>)}</div></section>
-      <footer id="contact"><span className="section-kicker">{t.contact.label}</span><h2>{t.contact.title[0]}<br /><em>{t.contact.title[1]}</em></h2><p>{t.contact.description}</p><div className="footer-actions"><a className="primary-btn" href="mailto:atchaolong@gmail.com"><Mail size={15} />{t.contact.action}</a><a className="ghost-btn" href="https://github.com/atchaolong" target="_blank" rel="noreferrer"><Github size={15} />GitHub</a></div><div className="footer-bottom"><span>© 2026 {t.contact.copyright}</span><a href="mailto:atchaolong@gmail.com">ATCHAOLONG@GMAIL.COM</a><button className="footer-replay" type="button" onClick={() => setIntroRequest(n => n + 1)}>{t.intro.replay} ↗</button><a href="#top">{t.contact.back}</a></div></footer>
-      <SignatureFooter />
+      <FooterReveal><footer id="contact"><span className="section-kicker">{t.contact.label}</span><h2>{t.contact.title[0]}<br /><em>{t.contact.title[1]}</em></h2><p>{t.contact.description}</p><div className="footer-actions"><a className="primary-btn" href="mailto:atchaolong@gmail.com"><Mail size={15} />{t.contact.action}</a><a className="ghost-btn" href="https://github.com/atchaolong" target="_blank" rel="noreferrer"><Github size={15} />GitHub</a></div><div className="footer-bottom"><span>© 2026 {t.contact.copyright}</span><a href="mailto:atchaolong@gmail.com">ATCHAOLONG@GMAIL.COM</a><button className="footer-replay" type="button" onClick={() => setIntroRequest(n => n + 1)}>{t.intro.replay} ↗</button><a href="#top">{t.contact.back}</a></div></footer></FooterReveal>
     </main>
   </MotionConfig>;
 }
