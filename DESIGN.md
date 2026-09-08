@@ -1,6 +1,6 @@
 # JCL.AI — Design direction
 
-An independent AI engineer’s portfolio: oversized editorial typography, a mathematical particle surface, and concrete engineering work. Keep the existing project facts and personal identity.
+An independent AI engineer’s portfolio: oversized editorial typography, playful particle characters, and concrete engineering work. Keep the existing project facts and personal identity.
 
 ## Visual system
 - Near-black canvas `#080b0a`, warm-white text `#edf1e9`, mint accent `#bcf8ce`.
@@ -18,7 +18,8 @@ An independent AI engineer’s portfolio: oversized editorial typography, a math
 ## Interaction
 - Particle surface: orbit/sphere buttons, pointer-driven tilt, pause/resume.
 - Animation stops offscreen and in background tabs. Respect live reduced-motion preferences.
-- Keep the particle rotation and tilt when pausing; no visual reset.
+- Keep the particle rotation, gaze and character pose when pausing; no visual reset.
+- The hero contains only the orbit/sphere characters and their controls, with no coordinate axes or technical space labels. Eyes follow the page pointer; body, eyes, nose, hands and feet have distinct reactions. Tap and keyboard activation provide a tickle reaction.
 - Project details use native disclosure elements with keyboard support.
 - All links and controls have visible keyboard focus. Mobile navigation remains accessible.
 - Signature: fine square pixels sampled from the actual letterforms, with room around the text for displacement. Pointer speed affects the disturbance; leaving releases it into a damped spring return.
