@@ -19,7 +19,8 @@ An independent AI engineer’s portfolio: oversized editorial typography, playfu
 - Particle surface: orbit/sphere buttons, pointer-driven tilt, pause/resume.
 - Animation stops offscreen and in background tabs. Respect live reduced-motion preferences.
 - Keep the particle rotation, gaze and character pose when pausing; no visual reset.
-- The hero contains only the orbit/sphere characters and their controls, with no coordinate axes or technical space labels. Eyes follow the page pointer; body, eyes, nose, hands and feet have distinct reactions. Tap and keyboard activation provide a tickle reaction.
+- The hero contains only the orbit/sphere characters and their controls, with no coordinate axes or technical space labels. Eyes follow the page pointer. Hover provides restrained anticipation; clicking eyes, nose, mouth, hands or feet triggers a wink, boop, whistle, high five or two-step respectively. Body clicks cycle through hop, proud pose and spin; double clicking spins, and holding the body gives a hug. Every action ends and settles instead of sharing a looping body shake. Empty canvas clicks do nothing.
+- Small trick buttons expose the same actions to touch and keyboard users. Enter or Space on the character cycles body tricks. Preserve native vertical touch scrolling; dragging, scrolling or leaving cancels a pending hold. Pausing freezes the current pose and disables trick buttons.
 - Project details use native disclosure elements with keyboard support.
 - All links and controls have visible keyboard focus. Mobile navigation remains accessible.
 - Signature: fine square pixels sampled from the actual letterforms, with room around the text for displacement. Pointer speed affects the disturbance; leaving releases it into a damped spring return.

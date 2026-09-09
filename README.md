@@ -14,7 +14,8 @@ npm run dev
 ## 主要文件
 
 - `components/Portfolio.tsx`：个人介绍、项目、技术栈与经历。
-- `components/SignalCore.tsx`：环形与球形粒子角色，支持全页鼠标追视、挤眼、皱鼻、挥手和踢腿；可点击或用键盘挠痒痒，支持暂停及减少动态效果。
+- `components/SignalCore.tsx`：环形与球形粒子角色，支持全页鼠标追视与分部位互动：眨眼、点鼻子、哼歌、击掌、舞步；身体点击轮换蹦跳、得意与转圈，长按拥抱。独立动作结束后归于平静，支持快捷按钮、键盘、暂停及减少动态效果。
+- `lib/character-play.ts`：角色部位命中、动作选择和有限时长；使用 Node.js 22.13+ 执行 `node --test tests/character-play.test.mjs` 验证，生产构建另行执行。
 - `app/globals.css`：设计变量、页面布局与移动端适配。
 - `components/SignatureFooter.tsx`：保留的交互像素签名。
 - `components/FooterReveal.tsx`：联系区覆盖在签名上，继续滚动时像幕布一样掀开；支持反向滚动、签名锚点和键盘访问。

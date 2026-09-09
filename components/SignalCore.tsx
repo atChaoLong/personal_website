@@ -3,16 +3,21 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useLocale } from "./LocaleProvider";
 import { Pause, Play } from "lucide-react";
+import { actionFrame, hitPart, tapTrick, type Action, type BodyPart, type Trick } from "@/lib/character-play";
 
-type Mood = "idle" | "body" | "eyes" | "nose" | "hands" | "feet";
+type Mood = BodyPart | Trick;
 const clamp = (n: number) => Math.max(-1, Math.min(1, n));
 
 /** The particle shapes are the bodies; limbs and expressions share their pose. */
 export default function SignalCore() {
   const { t: { core: c } } = useLocale();
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const activateRef = useRef<() => void>(() => {});
-  const animationRef = useRef({ mode: "orbit", time: 0, excitement: 0, reaction: "idle" as Mood, gaze: { x: 0, y: 0 } });
+  const activateRef = useRef<(x?: number, y?: number, double?: boolean, trick?: Trick) => void>(() => {});
+  const pressRef = useRef<(x: number, y: number) => void>(() => {});
+  const releaseRef = useRef<() => void>(() => {});
+  const cancelRef = useRef<() => void>(() => {});
+  const bodyTaps = useRef(0);
+  const animationRef = useRef({ mode: "orbit", time: 0, hover: "idle" as BodyPart, action: null as Action | null, gaze: { x: 0, y: 0 }, lean: 0, arms: [0, 0], feet: [0, 0] });
   const hintId = useId();
   const [mode, setMode] = useState<"orbit" | "sphere">("orbit");
   const [paused, setPaused] = useState(false);
@@ -23,9 +28,12 @@ export default function SignalCore() {
     if (!surface || !context) return;
     const canvas = surface, ctx = context;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const saved = animationRef.current.mode === mode ? animationRef.current : { time: 0, excitement: 0, reaction: "idle" as Mood, gaze: { x: 0, y: 0 } };
-    let width = 0, height = 0, frame = 0, last = 0, time = saved.time, visible = false, settle = 0;
-    let reaction: Mood = saved.reaction, shown: Mood = "idle", excitement = saved.excitement, tapUntil = 0;
+    const saved = animationRef.current.mode === mode ? animationRef.current : { time: 0, hover: "idle" as BodyPart, action: null as Action | null, gaze: { x: 0, y: 0 }, lean: 0, arms: [0, 0], feet: [0, 0] };
+    let width = 0, height = 0, frame = 0, last = 0, time = saved.time, visible = false, holdTimer = 0, settle = 0;
+    let hover = saved.hover, action = saved.action, shown: Mood = "idle", lean = saved.lean;
+    const arms = [...saved.arms], feet = [...saved.feet];
+    let press: { x: number; y: number; held: boolean } | null = null;
+    let suppressClick = false;
     let pointer: { x: number; y: number } | null = null;
     const gaze = { ...saved.gaze };
     let pose = { x: 0, y: 0, scale: 1, sx: 1, sy: 1 };
@@ -38,15 +46,12 @@ export default function SignalCore() {
       const y = 1 - i / 1999 * 2, r = Math.sqrt(1 - y * y), theta = i * Math.PI * (3 - Math.sqrt(5));
       return { x: Math.cos(theta) * r * 1.13, y: y * 1.13, z: Math.sin(theta) * r * 1.13 };
     });
-    function moodAtPointer(): Mood {
-      if (!pointer) return "idle";
-      const x = (pointer.x - pose.x) / (pose.scale * pose.sx), y = (pointer.y - pose.y) / (pose.scale * pose.sy);
-      if (Math.abs(x) > 1.22 && Math.abs(x) < 1.85 && y > -.6 && y < .8) return "hands";
-      if (Math.abs(x) > .18 && Math.abs(x) < .95 && y > 1.06 && y < 1.65) return "feet";
-      if (Math.abs(x) < .17 && y > .02 && y < .36) return "nose";
-      if (Math.abs(x) < .6 && y > -.45 && y < .02) return "eyes";
-      const ry = mode === "orbit" ? .87 : 1.22;
-      return x * x / 1.7 + y * y / (ry * ry) < 1 ? "body" : "idle";
+    function localPoint(x: number, y: number) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: (x - rect.left - pose.x) / (pose.scale * pose.sx), y: (y - rect.top - pose.y) / (pose.scale * pose.sy) };
+    }
+    function partAtPointer(): BodyPart {
+      return pointer ? hitPart((pointer.x - pose.x) / (pose.scale * pose.sx), (pointer.y - pose.y) / (pose.scale * pose.sy), mode) : "idle";
     }
     function ellipse(x: number, y: number, rx: number, ry: number, fill: string) {
       ctx.fillStyle = fill; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
@@ -63,26 +68,34 @@ export default function SignalCore() {
       if (!visible || document.hidden || !width || !height) return;
       const moving = !paused && !media.matches, dt = last ? Math.min(now - last, 40) : 16;
       last = now; if (moving) time += dt / 1000;
-      reaction = paused ? reaction : now < tapUntil ? "body" : media.matches ? "idle" : moodAtPointer();
+      if (!paused) hover = media.matches ? "idle" : partAtPointer();
+      const beat = actionFrame(action, time), kind = beat.kind, p = beat.progress, e = beat.envelope;
+      if (!kind) action = null;
+      const reaction: Mood = kind ?? hover;
       if (shown !== reaction) { shown = reaction; setMood(reaction); }
-      const ease = 1 - Math.exp(-dt / 110), target = reaction === "idle" ? 0 : 1;
-      excitement = moving ? excitement + (target - excitement) * ease : paused ? excitement : target;
-      const scale = Math.min(width, height) * .235, wobble = excitement * Math.sin(time * 17);
-      pose = { x: width / 2, y: height * .44 + Math.sin(time * 1.9) * scale * .035 - excitement * scale * .055, scale, sx: 1 + wobble * .035, sy: 1 - wobble * .035 };
+      const ease = 1 - Math.exp(-dt / 100), scale = Math.min(width, height) * .235;
+      const hop = kind === "hop" ? Math.sin(Math.PI * p) * .34 : 0;
+      const proud = kind === "proud" ? e : 0, squeeze = kind === "cuddle" ? e : 0;
+      if (!paused) lean += (((hover === "body" && !kind) ? gaze.x * .025 : 0) - lean) * ease;
+      pose = { x: width / 2, y: height * .44 + Math.sin(time * 1.9) * scale * .025 - hop * scale, scale, sx: 1 + proud * .065 + squeeze * .025, sy: 1 - squeeze * .035 };
       if (moving) {
         const gx = pointer ? clamp((pointer.x - pose.x) / (width * .35)) : 0, gy = pointer ? clamp((pointer.y - pose.y) / (height * .35)) : 0;
         gaze.x += (gx - gaze.x) * ease; gaze.y += (gy - gaze.y) * ease;
       }
       ctx.clearRect(0, 0, width, height);
       ctx.save(); ctx.translate(pose.x, pose.y); ctx.scale(scale * pose.sx, scale * pose.sy);
-      ellipse(0, 1.48, .73 - excitement * .06, .065, "#bcf8ce0b");
+      ellipse(0, 1.48 + hop, .73 - hop * .35, .065, "#bcf8ce0b");
+      const spin = kind === "spin" ? (p * p * (3 - 2 * p)) * Math.PI * 2 : 0;
+      ctx.rotate(lean + spin);
       // Short, rounded limbs attach at the silhouette, with a relaxed resting
       // pose. Only the nearer hand waves; foot taps alternate without flailing.
       for (const side of [-1, 1]) {
-        const greeting = reaction === "hands" && side === (gaze.x < 0 ? -1 : 1);
-        const armEnergy = excitement * (greeting ? 1 : reaction === "body" ? .35 : .12);
-        const wave = Math.sin(time * 6.5 + side) * armEnergy;
-        const handX = side * (1.46 + wave * .025), handY = .4 - armEnergy * .42 + wave * .065;
+        const slot = side === -1 ? 0 : 1, nearSide = gaze.x < 0 ? -1 : 1;
+        const handTarget = kind === "highfive" && side === beat.side ? e : kind === "proud" ? e * .45 : kind === "cuddle" ? e * .22 : !kind && hover === "hands" && side === nearSide ? .22 : 0;
+        if (!paused) arms[slot] += (handTarget - arms[slot]) * (media.matches ? 1 : ease);
+        const armEnergy = arms[slot];
+        const wave = kind === "highfive" && side === beat.side ? Math.sin(p * Math.PI * 3) * e : 0;
+        const handX = side * (1.46 - squeeze * .36 + wave * .035), handY = .4 - armEnergy * .52 + wave * .055;
         const shoulder = mode === "orbit" ? 1.2 : 1.08;
         const arm = [side * shoulder, .16, side * 1.4, .22 - armEnergy * .24, handX, handY];
         curve(arm, "#284d3a", .105); curve(arm, "#a7d9ba", .072);
@@ -97,8 +110,15 @@ export default function SignalCore() {
         ctx.bezierCurveTo(.24, .045, .22, -.07, .12, -.075);
         ctx.quadraticCurveTo(.045, -.15, -.07, -.1); ctx.fill();
         curve([-.09, -.02, -.11, .065, -.065, .1], "#e4ffe94a", .018); ctx.restore();
-        const footEnergy = excitement * (reaction === "feet" ? 1 : reaction === "body" ? .45 : .1);
-        const tap = Math.max(0, Math.sin(time * 6 + (side === 1 ? Math.PI : 0))) * footEnergy;
+        if (kind === "highfive" && side === beat.side && p > .28 && p < .72) {
+          for (let ray = 0; ray < 5; ray++) {
+            const angle = ray * Math.PI / 2.5, r = .22 + (p - .28) * .3;
+            curve([handX + Math.cos(angle) * r, handY + Math.sin(angle) * r, handX + Math.cos(angle) * (r + .06), handY + Math.sin(angle) * (r + .06), handX + Math.cos(angle) * (r + .12), handY + Math.sin(angle) * (r + .12)], "#fff1b8", .025);
+          }
+        }
+        const footTarget = kind === "dance" ? Math.max(0, Math.sin(p * Math.PI * 6 + (side === 1 ? Math.PI : 0))) * e : kind === "hop" ? hop * .5 : 0;
+        if (!paused) feet[slot] += (footTarget - feet[slot]) * (media.matches ? 1 : ease);
+        const tap = feet[slot];
         const ankleX = side * (.49 + tap * .055), ankleY = 1.28 - tap * .13;
         const leg = [side * .46, 1.0, side * .45, 1.16, ankleX, ankleY];
         curve(leg, "#284d3a", .12); curve(leg, "#a7d9ba", .085);
@@ -126,30 +146,41 @@ export default function SignalCore() {
       }
       const blink = Math.sin(time * 1.15) > .996;
       for (const side of [-1, 1]) {
-        const wink = blink || (reaction === "eyes" && side === (gaze.x < 0 ? -1 : 1)), eyeX = side * .28, eyeY = -.2;
-        curve([eyeX - .13, -.5, eyeX, -.57 - excitement * .08, eyeX + .12, -.49 + side * wobble * .035], "#d8ffe5", .026);
+        const wink = blink || (kind === "wink" && side === beat.side && p > .1 && p < .82) || kind === "cuddle", eyeX = side * .28, eyeY = -.2;
+        curve([eyeX - .13, -.5, eyeX, -.57 - (hover === "eyes" && side === (gaze.x < 0 ? -1 : 1) ? .065 : 0) - proud * .06, eyeX + .12, -.49], "#d8ffe5", .026);
         if (wink) { curve([eyeX - .15, eyeY, eyeX, eyeY + .09, eyeX + .15, eyeY], "#e4ffec", .045); continue; }
         ellipse(eyeX, eyeY, .185, .225, "#d9ffe6");
         ctx.save(); ctx.beginPath(); ctx.ellipse(eyeX, eyeY, .17, .21, 0, 0, Math.PI * 2); ctx.clip();
         const pupilX = eyeX + gaze.x * .075, pupilY = eyeY + gaze.y * .09;
         ellipse(pupilX, pupilY, .087, .115, "#102d22"); ellipse(pupilX + .025, pupilY - .036, .029, .034, "#f1fff5"); ctx.restore();
       }
-      const boop = reaction === "nose" ? Math.sin(time * 23) * .045 : 0;
-      ellipse(boop, .135, reaction === "nose" ? .12 : .085, .065, reaction === "nose" ? "#f1c5b8" : "#95dcae");
-      if (excitement > .08) {
-        ellipse(-.51, .16, .14, .065, `rgba(239,169,154,${excitement * .65})`);
-        ellipse(.51, .16, .14, .065, `rgba(239,169,154,${excitement * .65})`);
+      const boop = kind === "boop" ? Math.sin(p * Math.PI * 3) * e * .035 : 0;
+      ellipse(boop, .135, kind === "boop" ? .085 + e * .065 : .085, .065, kind === "boop" ? "#f1c5b8" : "#95dcae");
+      const blush = kind === "boop" || kind === "cuddle" ? e : 0;
+      if (blush > .08) {
+        ellipse(-.51, .16, .14, .065, `rgba(239,169,154,${blush * .65})`);
+        ellipse(.51, .16, .14, .065, `rgba(239,169,154,${blush * .65})`);
       }
-      if (reaction === "body" || reaction === "feet" || reaction === "hands") {
+      if (kind === "hop") {
         ctx.fillStyle = "#08251b"; ctx.strokeStyle = "#cfffde"; ctx.lineWidth = .025;
         ctx.beginPath(); ctx.moveTo(-.25, .35); ctx.quadraticCurveTo(0, .41, .25, .35); ctx.bezierCurveTo(.22, .79, -.19, .78, -.25, .35); ctx.fill(); ctx.stroke();
         ellipse(.04, .59, .12, .067, "#e8a994"); curve([-.14, .405, 0, .44, .14, .405], "#e2ffea", .045);
-      } else if (reaction === "nose") {
+      } else if (kind === "boop" || kind === "whistle" || (!kind && hover === "mouth")) {
         ellipse(0, .43, .09, .115, "#08251b");
         ctx.strokeStyle = "#cfffde"; ctx.lineWidth = .025; ctx.beginPath(); ctx.ellipse(0, .43, .09, .115, 0, 0, Math.PI * 2); ctx.stroke();
       } else curve([-.22, .34, .01, .55, .25, .3], "#d2ffdf", .034);
+      if (kind === "whistle" || kind === "cuddle" || kind === "spin") {
+        ctx.font = ".22px system-ui"; ctx.textAlign = "center";
+        for (let i = 0; i < 3; i++) {
+          const age = (p + i * .22) % 1;
+          ctx.globalAlpha = Math.sin(age * Math.PI) * e;
+          ctx.fillStyle = kind === "cuddle" ? "#edb6b8" : "#d4ffdf";
+          ctx.fillText(kind === "whistle" ? "♪" : kind === "cuddle" ? "♥" : "✦", .6 + i * .24, -.25 - age * .75);
+        }
+        ctx.globalAlpha = 1;
+      }
       ctx.restore();
-      animationRef.current = { mode, time, excitement, reaction, gaze: { ...gaze } };
+      animationRef.current = { mode, time, hover, action, gaze: { ...gaze }, lean, arms: [...arms], feet: [...feet] };
       if (moving) frame = requestAnimationFrame(draw);
     }
     function refresh() { cancelAnimationFrame(frame); frame = 0; last = 0; if (visible && !document.hidden) draw(performance.now()); }
@@ -159,15 +190,47 @@ export default function SignalCore() {
       canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); refresh();
     }
+    function play(kind: Trick, side: number) {
+      if (paused || !visible || document.hidden || canvas.closest("main")?.inert) return;
+      action = { kind, side, start: time };
+      if (media.matches) {
+        action.start -= .3;
+        window.clearTimeout(settle);
+        settle = window.setTimeout(() => { action = null; refresh(); }, 1000);
+      }
+      refresh();
+    }
+    function cancelPress() {
+      window.clearTimeout(holdTimer);
+      if (press?.held) { suppressClick = true; action = null; }
+      press = null;
+    }
     function move(event: PointerEvent) {
+      if (press && Math.hypot(event.clientX - press.x, event.clientY - press.y) > 12) { cancelPress(); suppressClick = true; }
       if (!visible || paused || media.matches || event.pointerType === "touch" || canvas.closest("main")?.inert) return;
       const rect = canvas.getBoundingClientRect(); pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
     }
-    function leave() { pointer = null; }
-    activateRef.current = () => {
+    function leave() { pointer = null; cancelPress(); }
+    pressRef.current = (x, y) => {
+      cancelPress(); suppressClick = false;
       if (paused) return;
-      tapUntil = performance.now() + 1400; refresh();
-      window.clearTimeout(settle); settle = window.setTimeout(refresh, 1450);
+      const local = localPoint(x, y);
+      if (hitPart(local.x, local.y, mode) !== "body") return;
+      press = { x, y, held: false };
+      holdTimer = window.setTimeout(() => {
+        if (press) { press.held = true; play("cuddle", local.x < 0 ? -1 : 1); }
+      }, 480);
+    };
+    releaseRef.current = cancelPress;
+    cancelRef.current = () => { cancelPress(); suppressClick = true; };
+    activateRef.current = (x, y, double = false, trick) => {
+      if (suppressClick && !trick && x !== undefined) { suppressClick = false; return; }
+      const local = x === undefined || y === undefined ? { x: .8, y: 0 } : localPoint(x, y);
+      const part = x === undefined ? "body" : hitPart(local.x, local.y, mode);
+      const selected = trick ?? tapTrick(part, bodyTaps.current, double);
+      if (!selected) return;
+      if (!trick && part === "body") bodyTaps.current++;
+      play(selected, local.x < 0 ? -1 : 1);
     };
     setMood("idle");
     const resizeObserver = new ResizeObserver(resize);
@@ -178,15 +241,15 @@ export default function SignalCore() {
     window.addEventListener("blur", leave); window.addEventListener("scroll", leave, { passive: true });
     document.addEventListener("visibilitychange", refresh); media.addEventListener("change", refresh);
     return () => {
-      cancelAnimationFrame(frame); window.clearTimeout(settle); resizeObserver.disconnect(); observer.disconnect();
+      cancelAnimationFrame(frame); window.clearTimeout(settle); window.clearTimeout(holdTimer); resizeObserver.disconnect(); observer.disconnect();
       window.removeEventListener("pointermove", move); document.documentElement.removeEventListener("pointerleave", leave);
       window.removeEventListener("blur", leave); window.removeEventListener("scroll", leave);
-      document.removeEventListener("visibilitychange", refresh); media.removeEventListener("change", refresh); activateRef.current = () => {};
+      document.removeEventListener("visibilitychange", refresh); media.removeEventListener("change", refresh); activateRef.current = () => {}; pressRef.current = () => {}; releaseRef.current = () => {}; cancelRef.current = () => {};
     };
   }, [mode, paused]);
 
   return <div className="signal-core">
-    <div className="core-stage"><button type="button" className="core-character" onClick={() => activateRef.current()} aria-label={c.interact} aria-describedby={hintId}>
+    <div className="core-stage"><button type="button" className="core-character" onPointerDown={event => pressRef.current(event.clientX, event.clientY)} onPointerUp={() => releaseRef.current()} onPointerCancel={() => cancelRef.current()} onPointerLeave={() => cancelRef.current()} onContextMenu={event => event.preventDefault()} onClick={event => activateRef.current(event.detail === 0 ? undefined : event.clientX, event.detail === 0 ? undefined : event.clientY, event.detail >= 2)} aria-label={c.interact} aria-describedby={hintId}>
       <canvas ref={canvasRef} aria-hidden="true" />
       <span className={`character-quip ${mood === "idle" ? "" : "character-quip-visible"}`} aria-hidden="true">{mood === "idle" ? "" : c.reactions[mood]}</span>
     </button></div>
@@ -198,5 +261,6 @@ export default function SignalCore() {
       <button className="pause-button" type="button" aria-label={paused ? c.play : c.pause} aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? <Play size={13} /> : <Pause size={13} />}</button>
     </div>
     <p className="character-hint" id={hintId}>{c.hint}</p>
+    <div className="character-tricks" role="group" aria-label={c.tricksLabel}>{(["wink", "highfive", "dance", "spin", "cuddle"] as const).map(trick => <button type="button" disabled={paused} key={trick} onClick={() => activateRef.current(undefined, undefined, false, trick)}>{c.tricks[trick]}</button>)}</div>
   </div>;
 }

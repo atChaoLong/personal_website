@@ -64,6 +64,10 @@ h1 .title-period { color:var(--green); }
 .character-quip { position:absolute; left:50%; top:1%; transform:translate(-50%,6px) rotate(-3deg); opacity:0; pointer-events:none; padding:9px 14px; border:1px solid #bcf8ce38; border-radius:13px 13px 13px 2px; background:#17291ee8; color:#d1f8dc; font:9px var(--mono); letter-spacing:.03em; white-space:nowrap; transition:opacity .15s,transform .2s; }
 .character-quip-visible { opacity:1; transform:translate(-50%,0) rotate(-3deg); }
 .character-hint { text-align:center; margin:16px 0 0; color:#7e9a87; font:9px/1.6 var(--mono); }
+.character-tricks { display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-top:12px; }
+.character-tricks button { padding:7px 10px; border:1px solid #bcf8ce22; border-radius:20px; background:#bcf8ce04; color:#9cbaa6; font:9px var(--mono); transition:background .2s,color .2s; }
+.character-tricks button:hover { background:#bcf8ce12; color:var(--green); }
+.character-tricks button:disabled { opacity:.35; cursor:default; }
 .core-controls { display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line); padding-top:17px; margin-inline:12px; }
 .core-modes { display:flex; gap:6px; }
 .core-controls button { background:transparent; color:#849c8b; border:1px solid transparent; padding:10px 12px; font:9px var(--mono); transition:color .2s,background .2s; }
