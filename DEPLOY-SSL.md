@@ -1,7 +1,5 @@
-# SSL 部署说明已合并
+# SSL 配置
 
-根据一台服务器部署多个项目的需求，当前方案改为 **宿主机统一 Nginx + 各项目独立 Docker Compose**。
+实际域名、证书和私钥保存在服务器的独立公共网关目录，不写入 Git。
 
-请按 [DEPLOY.md](./DEPLOY.md) 上线，包含现有 Nginx 版证书安装、域名跳转、新增项目及旧 Caddy 迁移说明。
-
-旧 compose.cert.yaml、.env.cert.example 及 Caddy 配置已移除，不再使用旧启动命令。
+通用 Nginx 示例位于 deploy/nginx/；维护和部署步骤见 [DEPLOY.md](./DEPLOY.md)。

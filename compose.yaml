@@ -2,15 +2,20 @@ name: jcl-portfolio
 
 services:
   web:
-    image: jcl-portfolio:${IMAGE_TAG:-local}
-    build:
-      context: .
+    image: ${APP_IMAGE:?Run bash scripts/deploy.sh to select a release image}
     restart: unless-stopped
     init: true
-    ports:
-      - "127.0.0.1:${APP_PORT:-3001}:3000"
+    networks:
+      ingress:
+        aliases:
+          - jcl-portfolio
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+
+networks:
+  ingress:
+    external: true
+    name: ${INGRESS_NETWORK:-jcl-ingress}

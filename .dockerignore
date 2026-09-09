@@ -20,3 +20,11 @@ certs
 **/*.pem
 **/*.pfx
 **/*.p12
+**/*.crt
+**/*.csr
+*.tar
+*.tar.gz
+*.zip
+.github
+scripts
+deploy.local

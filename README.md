@@ -13,11 +13,11 @@ npm run dev
 
 ## Docker 与域名部署
 
-使用宿主机 Nginx 统一管理域名与 SSL，每个项目通过独立 Docker Compose 运行。本站容器仅绑定 `127.0.0.1:3001`；Nginx 配置见 `deploy/nginx/atchaolong.conf`，沿用现有证书。
+使用独立 Docker Nginx 统一管理域名与 SSL，每个项目通过独立 Docker Compose 运行。本站容器不发布宿主机端口，通过 `jcl-ingress` 网络的 `jcl-portfolio:3000` 供入口访问。公共入口模板在 `deploy/gateway/`，本站域名配置在 `deploy/nginx/atchaolong.conf`。
 
 完整步骤、更新方式和排错请看 [DEPLOY.md](./DEPLOY.md)。
 
-新增项目使用不同的 Compose 项目名和本机端口，再新增一份 Nginx 站点配置即可。旧 Caddy 部署方案已替换；迁移和多项目步骤统一见 [DEPLOY.md](./DEPLOY.md)。
+本地提交并推送后，GitHub Actions 自动构建部署镜像。服务器在仓库目录执行 `bash scripts/deploy.sh`，自动拉取代码、下载当前提交的镜像、校验并部署。公共入口、证书及服务器环境信息独立保存在仓库外；操作说明见 [DEPLOY.md](./DEPLOY.md)。
 
 ## 主要文件
 

@@ -1,0 +1,64 @@
+name: Build deployment image
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deployment-image-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check public files and interaction logic
+        run: |
+          bash -n scripts/deploy.sh
+          node scripts/check-public.mjs
+          node --test tests/character-play.test.mjs
+      - name: Build and smoke-test the exact commit
+        env:
+          REVISION: ${{ github.sha }}
+        run: |
+          docker build --platform linux/amd64 --label "org.opencontainers.image.revision=$REVISION" -t "jcl-portfolio:$REVISION" .
+          docker run -d --name smoke "jcl-portfolio:$REVISION"
+          for attempt in $(seq 1 60); do
+            if docker exec smoke node -e "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
+              docker rm -f smoke
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs smoke
+          exit 1
+      - name: Publish immutable deployment archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          REVISION: ${{ github.sha }}
+        run: |
+          tag="deploy-$REVISION"
+          # Completed releases are immutable. A rerun may resume a draft.
+          if gh release view "$tag" --json isDraft --jq '.isDraft' | grep -qx false; then
+            exit 0
+          fi
+          mkdir -p release
+          docker save "jcl-portfolio:$REVISION" | gzip -1 > release/website-image.tar.gz
+          (cd release && sha256sum website-image.tar.gz > website-image.tar.gz.sha256)
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --target "$REVISION" --draft --prerelease --title "Deployment ${REVISION:0:12}" --notes "Linux/amd64 deployment image for commit $REVISION. Contains public application code only."
+          fi
+          gh release upload "$tag" release/* --clobber
+          gh release edit "$tag" --draft=false --prerelease --latest=false

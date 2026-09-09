@@ -32,3 +32,11 @@ certs/
 *.pem
 *.pfx
 *.p12
+*.crt
+*.csr
+.env.*
+!.env.example
+*.tar
+*.tar.gz
+*.zip
+deploy.local/
