@@ -1,9 +1,10 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { MotionConfig, motion } from "framer-motion";
-import { ArrowDown, ArrowUpRight, Braces, Database, Github, Mail, MapPin, Network, Play, Plus, Radio, Terminal, Workflow } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Braces, Database, Github, Mail, MapPin, Network, Plus, Radio, Terminal, Workflow } from "lucide-react";
 import { LocaleProvider, useLocale } from "./LocaleProvider";
+import SiteNavigation from "./SiteNavigation";
 import OpeningSequence from "./OpeningSequence";
 import SignalCore from "./SignalCore";
 import FooterReveal from "./FooterReveal";
@@ -11,14 +12,14 @@ import { AnimatedFlow, SystemsDiagram } from "./AnimatedDiagrams";
 import type { Locale } from "@/lib/messages";
 
 const icons = [Network, Workflow, Braces, Terminal, Database, Radio];
-const sections = ["work", "profile", "stack", "experience"];
 const reveal = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: .48, ease: "easeOut" as const } } };
 const number = (index: number) => String(index + 1).padStart(2, "0");
 
 export default function Portfolio({ initialLocale }: { initialLocale: Locale }) { return <LocaleProvider initialLocale={initialLocale}><PortfolioContent /></LocaleProvider>; }
 
 function PortfolioContent() {
-  const { locale, setLocale, t } = useLocale();
+  const { locale, t } = useLocale();
+  const navigationOrigin = useRef<HTMLDivElement>(null);
   const [introActive, setIntroActive] = useState(false);
   const [introRequest, setIntroRequest] = useState(0);
   return <MotionConfig reducedMotion="user">
@@ -26,16 +27,9 @@ function PortfolioContent() {
     <main inert={introActive} data-locale={locale}>
       <a className="skip-link" href="#work">{t.nav.skip}</a>
       <div className="noise" aria-hidden="true" />
+      <SiteNavigation originRef={navigationOrigin} onReplay={() => setIntroRequest(n => n + 1)} />
       <section className="hero" id="top">
-        <nav className="nav" aria-label={t.nav.label}>
-          <a href="#top" className="brand" aria-label={t.nav.home}><span className="brand-symbol" aria-hidden="true">✳</span> JCL<span>.AI</span></a>
-          <div className="nav-links">{sections.map((section, i) => <a key={section} href={`#${section}`}><small>{number(i)}</small>{t.nav.items[i]}</a>)}</div>
-          <div className="nav-actions">
-            <button className="intro-replay" type="button" onClick={() => setIntroRequest(n => n + 1)} aria-label={t.nav.replay} title={t.nav.replay}><Play size={13} /></button>
-            <div className="locale-switch" role="group" aria-label={t.nav.language}><button type="button" lang="zh-CN" aria-label="切换为中文" aria-pressed={locale === "zh"} onClick={() => setLocale("zh")}>中</button><span aria-hidden="true">/</span><button type="button" lang="en" aria-label="Switch to English" aria-pressed={locale === "en"} onClick={() => setLocale("en")}>EN</button></div>
-            <a className="nav-cta" href="mailto:atchaolong@gmail.com">{t.nav.contact}<ArrowUpRight size={14} /></a>
-          </div>
-        </nav>
+        <div ref={navigationOrigin} className="nav-origin" aria-hidden="true" />
         <div className="hero-content">
           <div className="hero-copy">
             <div className="eyebrow"><span className="status-dot" />{t.hero.name}<span className="eyebrow-divider">/</span>{t.hero.role}</div>

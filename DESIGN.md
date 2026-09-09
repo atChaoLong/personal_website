@@ -7,6 +7,7 @@ An independent AI engineer’s portfolio: oversized editorial typography, playfu
 - Inter for headlines and body, DM Mono for navigation and technical metadata; system and Chinese fallbacks must work without Google Fonts.
 - Generous spacing, square corners and fine borders. Use accent color for emphasis, rather than applying the same green treatment everywhere.
 - The contact section reverses to a full mint surface to give the long page a clear ending.
+- Identity: a mint open C orbit, a warm-white J and one satellite point form the custom mark. Pair it with the compact JCL.AI wordmark. The navigation mark and browser icons share the same geometry; interaction is a brief orbit tilt on hover or keyboard focus, with no idle animation. Reduced motion keeps the mark still.
 
 ## Reading order
 1. Personal positioning and an interactive particle core.
@@ -23,6 +24,7 @@ An independent AI engineer’s portfolio: oversized editorial typography, playfu
 - Small trick buttons expose the same actions to touch and keyboard users. Enter or Space on the character cycles body tricks. Preserve native vertical touch scrolling; dragging, scrolling or leaving cancels a pending hold. Pausing freezes the current pose and disables trick buttons.
 - Project details use native disclosure elements with keyboard support.
 - All links and controls have visible keyboard focus. Mobile navigation remains accessible.
+- The navigation stays fixed above the page and reserves its original height in the hero. Once that original space leaves the viewport, it becomes a compact dark glass bar and replaces JCL.AI with a custom lowercase atchaolong wordmark: mint at, warm-white circular letterforms and an extended g signature tail. The change reverses at the top, reserves the same brand width and respects reduced motion. Anchor links account for the fixed header; the opening still covers and disables navigation.
 - Signature: fine square pixels sampled from the actual letterforms, with room around the text for displacement. Pointer speed affects the disturbance; leaving releases it into a damped spring return.
 - Click, touch, Enter or Space launch a bounded expanding pulse. Preserve a faint home-position impression so the word remains legible during interaction.
 - The signature stops rendering when settled, offscreen or hidden. Reduced motion renders static text, including after resize and font loading. Keep a text fallback until the canvas is ready.
