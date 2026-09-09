@@ -11,6 +11,12 @@ npm run dev
 
 打开 http://localhost:3000 。生产验证使用 `npm run build`。
 
+## Docker 与域名部署
+
+已提供多阶段 `Dockerfile`、`compose.yaml` 和 Caddy 自动 HTTPS 配置。新 Linux 服务器安装 Docker/Compose、解析域名并放行 80/443 后，在项目根目录复制 `.env.example` 为 `.env`，填写 `DOMAIN`，执行 `sudo docker compose up -d --build`。
+
+完整步骤、更新方式和排错请看 [DEPLOY.md](./DEPLOY.md)。
+
 ## 主要文件
 
 - `components/Portfolio.tsx`：个人介绍、项目、技术栈与经历。

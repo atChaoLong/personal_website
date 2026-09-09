@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+.git
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+*.log
+.vscode
+.idea
+tests
+README.md
+DESIGN.md
+DEPLOY.md
