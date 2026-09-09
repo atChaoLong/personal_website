@@ -13,3 +13,10 @@ tests
 README.md
 DESIGN.md
 DEPLOY.md
+DEPLOY-SSL.md
+certs
+**/*_nginx
+**/*.key
+**/*.pem
+**/*.pfx
+**/*.p12

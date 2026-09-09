@@ -24,3 +24,11 @@ Thumbs.db
 .idea/
 
 *.tsbuildinfo
+
+# TLS certificates and private keys stay outside source control.
+certs/
+*_nginx/
+*.key
+*.pem
+*.pfx
+*.p12

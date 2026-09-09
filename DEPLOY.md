@@ -1,140 +1,173 @@
-# Docker + 域名部署
+# 正式部署：统一 Nginx + 多项目 Docker
 
-适用于一台新 Linux 服务器，80/443 未被其他服务占用。请求路径：浏览器 → Caddy（HTTPS）→ Next.js 网站容器。无需在宿主机安装 Node.js、npm 或 Nginx。
+宿主机安装一份 Nginx，统一监听公网 80/443、管理证书、按域名转发。每个项目拥有独立目录和 Compose，只暴露一个宿主机回环端口。本站使用 `127.0.0.1:3001 → 容器 3000`。
 
-## 1. 安装 Docker
+```text
+公网 80/443 → 宿主机 Nginx
+                ├─ www.atchaolong.me → 127.0.0.1:3001 → 个人网站
+                ├─ app.example.com  → 127.0.0.1:3002 → 第二个项目
+                └─ api.example.com  → 127.0.0.1:3003 → 第三个项目
+```
 
-先运行 `cat /etc/os-release` 确认发行版，按照 [Docker 官方 Linux 安装文档](https://docs.docker.com/engine/install/)选择 Ubuntu、Debian、CentOS 等对应说明，安装 Docker Engine、Buildx 和 Compose 插件。Ubuntu 可直接参考[官方 Ubuntu 安装步骤](https://docs.docker.com/engine/install/ubuntu/#install-using-the-apt-repository)。不要把 Ubuntu 的安装命令直接用到其他发行版。
+`app.example.com`、`api.example.com` 是后续项目占位示例。本站裸域名 `atchaolong.me` 自动跳转到 www 主站，并保留路径和查询参数。此方案的 Nginx 运行在宿主机，不能把回环地址配置直接用到普通独立 Nginx 容器里。
 
-安装后验证并启用开机启动：
+## 1. 安装 Docker 和 Nginx
+
+登录服务器，执行 `cat /etc/os-release` 确认发行版，按 [Docker 官方安装说明](https://docs.docker.com/engine/install/)安装 Docker Engine、Buildx 和 Compose 插件。
+
+Ubuntu/Debian 安装宿主机 Nginx：
 
 ```bash
+sudo apt update
+sudo apt install -y nginx
 sudo systemctl enable --now docker
 sudo docker version
 sudo docker compose version
+nginx -v
 ```
 
-首次构建需要服务器能够访问 Docker Hub 和 npm registry。
+Rocky/AlmaLinux 等发行版使用其 dnf 包管理器，不要混用 apt 命令。启用 SELinux 的主机，如果日志显示 Nginx 连接上游被策略拒绝，应按发行版说明配置 `httpd_can_network_connect`，不要关闭 SELinux。
 
-## 2. 配置域名与网络
+本指南使用 `/etc/nginx/conf.d/*.conf`；确认 Nginx 的 http 块包含该目录。面板管理的 Nginx 应使用面板对应配置入口。
 
-在域名服务商的 DNS 控制台添加 A 记录。以 `example.com` 为例：
+## 2. 域名和网络
 
-| 要访问的地址 | 记录类型 | 主机记录 | 记录值 |
-| --- | --- | --- | --- |
-| example.com | A | @ | 服务器公网 IPv4 |
-| me.example.com（若选择子域名） | A | me | 服务器公网 IPv4 |
+DNS 控制台将 A 记录 `@` 和 `www` 都指向服务器公网 IPv4，更新已有记录，避免遗留旧地址。没有可用 IPv6 时不要配置 AAAA。
 
-选择一个访问地址即可，`.env` 中的 `DOMAIN` 与它一致。只有服务器具有可用公网 IPv6 时才配置 AAAA；已有的错误 AAAA 记录需要更正。首次配置时可使用纯 DNS 解析，便于直接排查证书问题。
+安全组和系统防火墙允许 TCP 80/443，并保留 SSH 端口。3001、3002 等应用端口只绑定回环地址，不向公网开放。当前 Nginx 配置提供 IPv4 入口。
 
-在云服务器安全组及系统防火墙中允许入站 TCP 80、443；UDP 443 可选，用于 HTTP/3。保留原本的 SSH 访问端口。网站的 3000 端口仅供容器之间通信，不需要对公网开放。
+## 3. 上传并启动项目
 
-可用下面的命令检查解析：
+通过 SFTP 或 Git 将当前源码放到服务器独立目录，例如 `~/apps/personal_website`。包括 `.dockerignore`、`.env.example` 等隐藏文件，不上传 `node_modules/`、`.next/`、`.git/` 或证书。Git 方式需先提交并推送本次修改。
 
 ```bash
-getent ahostsv4 example.com
-```
-
-将 `example.com` 替换成你的域名，确认返回服务器公网 IP。
-
-## 3. 把项目放到服务器
-
-将包含本次部署文件的代码提交并推送到自己的仓库，然后在服务器执行：
-
-```bash
-git clone <你的仓库地址> personal_website
-cd personal_website
-```
-
-也可以使用 SFTP 上传当前项目源码，包含隐藏文件 `.dockerignore` 和 `.env.example`，以及 `deploy` 目录。不需要上传 `node_modules`、`.next` 或 `.git`。
-
-之后的命令都在项目根目录执行：
-
-```bash
+cd ~/apps/personal_website
 cp .env.example .env
-nano .env
 ```
 
-至少修改这一行：
+这是首次配置命令；已有 `.env` 时请编辑并保留其他自定义设置。本站所需内容：
 
 ```dotenv
-DOMAIN=example.com
+IMAGE_TAG=local
+APP_PORT=3001
 ```
 
-填写你自己的完整域名，例如 `me.example.com`，不要包含 `https://`、路径或末尾斜杠。当前配置绑定一个域名，不会自动添加 `www`。`.env` 已被 Git 忽略，也不会打进网站镜像。
-
-## 4. 构建并启动
+若之前复制过 `.env.cert.example`，务必去掉其中的 `COMPOSE_FILE`。新版 Compose 只包含网站，不再包含 Caddy。
 
 ```bash
 sudo docker compose config --quiet
 sudo docker compose up -d --build
 sudo docker compose ps
-sudo docker compose logs --tail=100 web caddy
+curl -I http://127.0.0.1:3001
 ```
 
-首次构建会安装依赖并编译网站。`web` 健康检查通过后启动 Caddy。DNS 和端口正确时，Caddy 会自动申请证书、把 HTTP 跳转到 HTTPS，并持续自动续期。[Caddy 自动 HTTPS 文档](https://caddyserver.com/docs/automatic-https)
+预期 web 为 healthy，curl 返回 200。首次构建需要访问 Docker 镜像仓库和 npm registry。启动项目不会占用 80/443，也不会启动或重启 Nginx。
 
-浏览器访问 `https://你的域名`。还可以验证：
+## 4. 上传证书并交给统一 Nginx
+
+将下载的 `www.atchaolong.me.pem` 和 `www.atchaolong.me.key` 通过 SFTP 上传到服务器用户主目录，然后执行：
 
 ```bash
-curl -I http://example.com
-curl -I https://example.com
+sudo install -d -m 700 /etc/nginx/certs/atchaolong.me
+sudo install -m 644 ~/www.atchaolong.me.pem /etc/nginx/certs/atchaolong.me/fullchain.pem
+sudo install -m 600 ~/www.atchaolong.me.key /etc/nginx/certs/atchaolong.me/privkey.pem
 ```
 
-预期 HTTP 跳转到 HTTPS，HTTPS 返回 200。访问 `/?lang=zh` 和 `/?lang=en` 可以验证两种语言。
+证书由宿主机管理，不进入应用容器或镜像，不要把私钥内容提交到 Git 或粘贴到聊天。本次证书覆盖 www 和裸域名，已检查与私钥匹配。PEM 包含站点证书及中间证书，站点证书需位于链文件首位。[Nginx HTTPS 文档](https://nginx.org/en/docs/http/configuring_https_servers.html)
 
-## 5. 更新、日志与停止
+## 5. 启用站点
 
-更新源代码后重新构建并替换网站容器：
+在项目根目录执行：
 
 ```bash
-git pull --ff-only
+sudo install -m 644 deploy/nginx/atchaolong.conf /etc/nginx/conf.d/atchaolong.conf
+sudo nginx -t
+```
+
+仅在校验成功后执行：
+
+```bash
+sudo systemctl enable --now nginx
+sudo systemctl reload nginx
+```
+
+已有相同域名配置时，更新原配置，避免重复 server_name。保留其他项目配置。
+
+```bash
+curl -I https://www.atchaolong.me
+curl -I https://atchaolong.me
+curl -I http://www.atchaolong.me
+```
+
+主站 HTTPS 应返回 200，裸域名和 HTTP 应跳转到主站 HTTPS。不要加 `-k`，这样才能发现证书错误。浏览器再检查中英文切换、开场及页尾。
+
+DNS 尚在传播时，可从本机指定公网 IP 临时验证：
+
+```bash
+curl --resolve www.atchaolong.me:443:服务器公网IP -I https://www.atchaolong.me
+```
+
+## 6. 后续增加项目
+
+新项目用独立目录、独立 Compose 项目名和不同回环端口。不要给所有项目都用 `name: jcl-portfolio`。示例：
+
+```yaml
+name: second-project
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3002:3000"
+```
+
+最后的 3000 改成该应用实际容器端口；应用应在容器内监听 `0.0.0.0`。
+
+1. 新域名或子域名解析到同一服务器。
+2. 在新项目目录构建启动，验证 `http://127.0.0.1:3002`。
+3. 准备覆盖新域名的证书。现有证书只覆盖 `atchaolong.me` 和 `www.atchaolong.me`，不覆盖任意其他子域名。
+4. 复制 `deploy/nginx/project.conf.example` 为 `/etc/nginx/conf.d/second-project.conf`，修改域名、证书路径、代理端口；不要覆盖个人网站配置。
+5. 执行 `sudo nginx -t`，通过后 `sudo systemctl reload nginx`。
+
+同一公网 IP 和 443 可服务多个域名，Nginx 按域名与 TLS SNI 选择站点和证书。[Nginx SNI 文档](https://nginx.org/en/docs/http/configuring_https_servers.html#sni)
+
+新增项目不需要修改个人网站 Compose。模板支持普通 HTTP 和流式响应；需要 WebSocket 的新应用应按其要求增加 Upgrade 转发配置。
+
+## 7. 更新与运维
+
+更新个人网站代码后，仅在该项目目录执行：
+
+```bash
 sudo docker compose up -d --build
+sudo docker compose logs --tail=100 web
 ```
 
-单机单副本更新可能有短暂中断。构建失败时先查看错误，修复后重试。
+不需要重启 Nginx。单副本网站自身可能短暂中断，其他项目容器不会被替换；所有项目仍共享服务器资源与 Nginx，大型构建时需留意资源占用。
+
+停止本站用 `sudo docker compose down`，统一 Nginx 和其他项目保持运行，本站域名暂时可能返回 502。
+
+修改 APP_PORT 时，同时修改 Nginx 的 proxy_pass，重新创建网站容器并校验、重载 Nginx。
+
+手动证书需要在 **2026 年 12 月 7 日前**续签更换。更新 `/etc/nginx/certs/atchaolong.me/` 中两个文件后，运行 `sudo nginx -t`，通过后 `sudo systemctl reload nginx`。不需要重建应用镜像。以后也可为统一入口单独引入 ACME 自动续期。
 
 ```bash
-# 持续查看日志（Ctrl+C 只退出查看，不会停止网站）
-sudo docker compose logs -f --tail=100
-
-# 重新启动
-sudo docker compose restart
-
-# 停止本项目，保留证书数据卷
-sudo docker compose down
+sudo docker compose ps
+sudo docker compose logs --tail=100 web
+sudo tail -n 100 /var/log/nginx/error.log
 ```
 
-容器设有 `unless-stopped` 重启策略；Docker 随服务器启动后，未被手动停止的容器会恢复运行。证书保存在 `caddy_data` 数据卷内，日常更新不需要删除它，不要在普通更新时使用 `down -v`。
+## 从旧 Caddy 方案迁移
 
-如需保留可回退的镜像，每次更新前给 `.env` 的 `IMAGE_TAG` 设置唯一版本，例如 `2026-09-09-v1`，再执行构建。回退时改回保留的旧版本标签，并执行 `sudo docker compose up -d --no-build web`；应保留与旧版本匹配的部署配置。
+尚未部署过的直接按本指南操作。
 
-## 常见问题
+若已启动旧 Caddy，在替换服务器文件之前，于旧项目目录执行 `sudo docker compose stop caddy` 释放 80/443。保留证书和旧数据卷，上传新版源码，去掉 `.env` 中的 `COMPOSE_FILE`，按本文配置 Nginx。若文件已被替换，用 `sudo docker ps` 找到原项目的 Caddy 容器，只停止该容器。
 
-- **证书申请失败**：检查 A/AAAA 解析、云安全组与系统防火墙的 80/443，以及 `sudo docker compose logs --tail=100 caddy`。改正后重试，不要反复删除证书卷。
-- **502 或 web 不健康**：查看 `sudo docker compose logs --tail=100 web` 与 `sudo docker compose ps`。
-- **构建期间进程被 Killed**：检查服务器内存和日志；可以增加内存/交换空间，或在同架构机器构建镜像再导入服务器。
-- **修改 DOMAIN 后不生效**：运行 `sudo docker compose up -d caddy` 重新创建容器；单纯 `restart` 不会加载新的环境变量。
-- **需要 www 也能访问**：先给 `www` 配置 DNS，再把 Caddyfile 的站点地址改成 `{$DOMAIN}, www.example.com`（替换为真实域名），然后运行 `sudo docker compose exec caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile`。
+新 Compose 不再管理旧 Caddy；确认迁移成功后可删除旧的已停止 Caddy 容器。日常更新不需要 `--remove-orphans` 或删除数据卷。
 
-## 可选：已有宿主机 Nginx / 宝塔
+## 验证与依赖记录
 
-新服务器按上面的默认方案即可。仅当已有宿主机反向代理时，使用附带的端口覆盖文件，只启动网站服务：
+本次使用临时测试证书完成 Nginx 配置校验及实际反向代理验证：主站 HTTPS 返回 200，裸域名 HTTPS 和 HTTP 返回 301，路径与查询参数保留。临时证书仅用于本地测试；正式证书仍需在服务器按上文安装并验证。
 
-```bash
-sudo docker compose -f compose.yaml -f compose.proxy.yaml up -d --build web
-```
+此前已在 Linux Docker 中验证网站镜像构建、健康检查、中英文页面和静态资源。现有依赖审计曾报告 3 项（1 moderate、2 high），涉及 Next.js 的 PostCSS 依赖及 sharp；入口调整未升级依赖，上线前仍需单独评估处理。不要直接运行可能升级 Next.js 主版本的 `npm audit fix --force`。
 
-然后在已有代理中把域名反向代理到 `http://127.0.0.1:3000`，由已有代理管理证书。若端口已占用，修改 `.env` 中的 `APP_PORT`。这个地址用于宿主机代理；其他容器内的 `127.0.0.1` 指向自身，需要另外配置共享 Docker 网络。
-
-不要同时启动本项目 Caddy 和已有的 80/443 服务。若此前已经启动本项目 Caddy，先执行 `sudo docker compose stop caddy`。
-
-## 镜像说明
-
-Dockerfile 使用多阶段构建、锁文件安装依赖、非 root 用户运行、健康检查及 Next.js `standalone` 输出，并复制必要静态资源。镜像构建不会使用本机 `.next`。部署前不需要先在 Windows 上运行 `npm run build`。[Next.js standalone 文档](https://nextjs.org/docs/app/api-reference/config/next-config-js/output)
-
-## 本次本地验证
-
-已在 Linux Docker 容器内完成生产构建：网站健康检查通过，中英文首页及 JavaScript 静态资源均返回 200，运行用户为 `node`；Compose 配置和 Caddy 配置验证通过。尚未在你的服务器上启动，也未验证真实域名证书签发。
-
-构建期间 npm 提示现有锁文件的依赖告警。通过官方 registry 执行 `npm audit --omit=dev` 确认 3 项（1 moderate、2 high），涉及 Next.js 的 PostCSS 依赖及 sharp。此部署改动保留现有应用版本，没有自动执行可能升级 Next.js 主版本的 `npm audit fix --force`。这些是依赖审计结果，不代表已验证的本站可利用路径；正式上线前应单独评估并处理对应依赖更新。
+配置只在本地准备和验证，尚未连接你的服务器或修改公网 DNS。

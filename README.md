@@ -13,9 +13,11 @@ npm run dev
 
 ## Docker 与域名部署
 
-已提供多阶段 `Dockerfile`、`compose.yaml` 和 Caddy 自动 HTTPS 配置。新 Linux 服务器安装 Docker/Compose、解析域名并放行 80/443 后，在项目根目录复制 `.env.example` 为 `.env`，填写 `DOMAIN`，执行 `sudo docker compose up -d --build`。
+使用宿主机 Nginx 统一管理域名与 SSL，每个项目通过独立 Docker Compose 运行。本站容器仅绑定 `127.0.0.1:3001`；Nginx 配置见 `deploy/nginx/atchaolong.conf`，沿用现有证书。
 
 完整步骤、更新方式和排错请看 [DEPLOY.md](./DEPLOY.md)。
+
+新增项目使用不同的 Compose 项目名和本机端口，再新增一份 Nginx 站点配置即可。旧 Caddy 部署方案已替换；迁移和多项目步骤统一见 [DEPLOY.md](./DEPLOY.md)。
 
 ## 主要文件
 

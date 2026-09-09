@@ -1,6 +1,0 @@
-# Optional override: expose only to a reverse proxy running on the host.
-# Start only web (see DEPLOY.md); do not start Caddy alongside an existing proxy.
-services:
-  web:
-    ports:
-      - "127.0.0.1:${APP_PORT:-3000}:3000"
