@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ArrowRight, Network, Pause, Play } from "lucide-react";
 import { useLocale } from "./LocaleProvider";
 
-function useDiagramMotion() {
+export function useDiagramMotion() {
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -22,7 +22,7 @@ function useDiagramMotion() {
   }, []);
   return { ref, running: active && !paused, paused, toggle: () => setPaused(value => !value) };
 }
-function MotionToggle({ paused, toggle }: { paused: boolean; toggle: () => void }) {
+export function MotionToggle({ paused, toggle }: { paused: boolean; toggle: () => void }) {
   const { t } = useLocale();
   return <button type="button" className="diagram-toggle" onClick={toggle} aria-pressed={paused} aria-label={paused ? t.diagram.play : t.diagram.pause} title={paused ? t.diagram.play : t.diagram.pause}>{paused ? <Play size={11} /> : <Pause size={11} />}</button>;
 }

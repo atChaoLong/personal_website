@@ -1,0 +1,45 @@
+.project-visual.project-visual-detailed { height:auto; min-height:430px; }
+.project-architecture { --architecture-rgb:188,248,206; width:100%; }
+.architecture-speech { --architecture-rgb:153,217,240; }
+.architecture-video { --architecture-rgb:214,179,245; }
+.video-adapters { width:100%; padding:14px 12px; border:1px solid rgba(var(--architecture-rgb),.3); background:rgba(var(--architecture-rgb),.035); text-align:center; }
+.video-provider-list { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin:12px 0 9px; }
+.video-provider-list>span { padding:8px 3px; border:1px solid rgba(var(--architecture-rgb),.2); color:rgb(var(--architecture-rgb)); font:9px/1.5 var(--mono); }
+.video-adapters>small,.video-delivery small { display:block; color:rgba(var(--architecture-rgb),.7); font:8px/1.7 var(--mono); }
+.video-delivery { display:grid; grid-template-columns:1fr 1fr; gap:16px; width:100%; margin-top:16px; border-top:1px dashed rgba(var(--architecture-rgb),.3); padding-top:12px; text-align:center; }
+.video-delivery strong { display:block; color:rgb(var(--architecture-rgb)); font:10px/1.7 var(--mono); margin-bottom:3px; }
+.project-architecture-stage { min-height:326px; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:14px 0 2px; }
+.architecture-terminal { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:8px 16px; width:82%; min-height:49px; padding:10px 14px; border:1px solid rgba(var(--architecture-rgb),.32); background:rgba(var(--architecture-rgb),.045); color:rgb(var(--architecture-rgb)); text-align:center; }
+.architecture-terminal>div { display:grid; gap:5px; }
+.architecture-terminal strong,.speech-branches strong { font:500 11px/1.6 var(--mono); }
+.architecture-terminal small,.speech-branches small { display:block; font:8px/1.7 var(--mono); color:rgba(var(--architecture-rgb),.65); }
+.architecture-result { border-color:rgba(var(--architecture-rgb),.5); }
+.project-wire { position:relative; flex:none; height:22px; width:1px; background:rgba(var(--architecture-rgb),.28); }
+.project-wire::after { content:""; position:absolute; bottom:0; left:-2px; width:5px; height:5px; border-right:1px solid rgba(var(--architecture-rgb),.65); border-bottom:1px solid rgba(var(--architecture-rgb),.65); transform:rotate(45deg); }
+.project-wire>i { position:absolute; top:0; left:-1px; width:3px; height:5px; border-radius:2px; background:rgb(var(--architecture-rgb)); animation:architecture-signal 2.8s ease-in-out infinite; }
+.agent-cluster { width:100%; border:1px solid rgba(var(--architecture-rgb),.21); background:rgba(var(--architecture-rgb),.025); padding:14px; }
+.architecture-cluster-label { display:flex; align-items:center; justify-content:center; gap:8px; color:rgba(var(--architecture-rgb),.8); font:8px/1.8 var(--mono); text-align:center; }
+.agent-roles { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; margin:13px 0; }
+.agent-roles>span { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:48px; padding:8px 3px; border:1px solid rgba(var(--architecture-rgb),.24); color:rgb(var(--architecture-rgb)); font:9px/1.5 var(--mono); text-align:center; }
+.agent-roles i { width:3px; height:3px; background:rgb(var(--architecture-rgb)); box-shadow:0 0 8px rgba(var(--architecture-rgb),.35); animation:architecture-role 2.8s ease-in-out infinite; }
+.agent-resources { border-top:1px dashed rgba(var(--architecture-rgb),.22); padding-top:10px; text-align:center; }
+.agent-resources>small { font:7px var(--mono); color:rgba(var(--architecture-rgb),.6); }
+.agent-resources>div { display:flex; flex-wrap:wrap; justify-content:center; gap:6px 16px; margin-top:8px; font:8px/1.6 var(--mono); color:rgba(var(--architecture-rgb),.9); }
+.speech-branches { position:relative; display:grid; grid-template-columns:1fr 1fr; gap:16px; width:100%; }
+.speech-branches::before,.speech-branches::after { content:""; position:absolute; left:25%; right:25%; height:10px; border:1px solid rgba(var(--architecture-rgb),.28); }
+.speech-branches::before { top:-11px; border-bottom:0; }.speech-branches::after { bottom:-11px; border-top:0; }
+.speech-branches>div { position:relative; z-index:1; background:#101d21; border:1px solid rgba(var(--architecture-rgb),.35); padding:12px 8px; text-align:center; color:rgb(var(--architecture-rgb)); }
+.speech-branches small { margin-top:6px; }
+.project-architecture>.flow-caption { color:rgba(var(--architecture-rgb),.7); margin-top:13px; gap:12px; line-height:1.7; }
+.project-architecture .diagram-toggle { flex:none; }
+.project-engineering { padding-top:18px; border-top:1px solid var(--line); }
+.project-engineering>section+section { margin-top:20px; }
+.project-engineering h4 { font:500 11px/1.7 var(--mono); margin:0 0 7px; color:var(--green); }
+.project-engineering p { font-size:12px; line-height:1.9; color:#a8b9af; margin:0; }
+.project-engineering .project-implementation-note { font-size:10px; color:#8f9e94; margin-top:22px; border-top:1px solid var(--line); padding-top:14px; }
+@keyframes architecture-signal { 0%,12% { opacity:0; transform:translateY(0); } 30% { opacity:1; } 80%,100% { opacity:0; transform:translateY(17px); } }
+@keyframes architecture-role { 0%,100% { opacity:.3; } 50% { opacity:1; } }
+@media(max-width:1100px) and (min-width:761px) { .project-visual.project-visual-detailed { padding:22px; }.agent-cluster { padding:11px; }.agent-roles { gap:4px; }.agent-roles>span { font-size:8px; }.architecture-terminal { width:92%; }.speech-branches { gap:10px; } }
+@media(max-width:760px) { .project-visual.project-visual-detailed { padding:20px; min-height:420px; }.project-architecture-stage { min-height:320px; }.architecture-terminal { width:92%; }.architecture-terminal strong,.speech-branches strong { font-size:10px; }.architecture-terminal small,.speech-branches small { font-size:7px; } }
+@media(max-width:400px) { .agent-roles { grid-template-columns:repeat(3,minmax(0,1fr)); }.agent-cluster { padding:10px; }.agent-roles>span { font-size:8px; min-height:40px; gap:5px; }.agent-roles>span:last-child { grid-column:span 2; }.speech-branches { gap:8px; }.architecture-cluster-label { font-size:7px; } }
+@media(prefers-reduced-motion:reduce) { .project-wire>i,.agent-roles i { animation:none; } }

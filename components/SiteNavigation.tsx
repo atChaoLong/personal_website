@@ -6,7 +6,7 @@ import { useLocale } from "./LocaleProvider";
 import BrandMark from "./BrandMark";
 import AtchaolongWordmark from "./AtchaolongWordmark";
 
-const sections = ["work", "profile", "stack", "experience"];
+const sections = ["work", "research", "profile", "stack", "experience"];
 
 export default function SiteNavigation({ originRef, onReplay }: { originRef: RefObject<HTMLDivElement | null>; onReplay: () => void }) {
   const { locale, setLocale, t } = useLocale();

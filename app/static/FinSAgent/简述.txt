@@ -1,0 +1,11 @@
+IJCAI 2026 国际人工智能联合会议 · FinLLM 研讨会 · 最佳论文
+
+FinSAgent
+FinSAgent: Corpus-Aligned Multi-Agent RAG Framework for Evidence-Grounded SEC Filing Question Answering
+
+从“找到答案”进一步走向结构化金融调查。
+
+FinSAgent 根据 SEC 文件的结构拆解金融问题，由不同 agent 分别检索底层语料，并进一步区分真正支持结论的证据和仅仅语义相似的内容。它本质上仍然是金融 QA 系统，但已经更接近分析师真实的工作方式：拆解问题、多角度调查，并基于可追溯证据形成结论。
+
+论文链接：https://arxiv.org/abs/2607.18102
+会议主页：https://finllm.github.io/workshop/#/

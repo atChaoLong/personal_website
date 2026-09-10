@@ -1,0 +1,11 @@
+WWW 2026 国际万维网大会 · 产业方向 · 最佳论文 · AAAI 2026 人工智能会议 金融服务智能体研讨会
+
+VeritasFi
+VeritasFi: An Adaptable, Multi-tiered RAG Framework for Multi-modal Financial Question Answering
+
+把金融 QA 从单一文档扩展到多源信息环境。
+
+VeritasFi 将文档检索、实时数据工具和专家知识结合起来，同时处理文本、表格和图像等多种信息。更重要的是，它探索了通用金融 QA 系统如何快速适配企业或机构自身的数据，这也直接对应真实买方场景中的私有研报、内部知识库和专有数据。
+
+论文链接：https://dl.acm.org/doi/10.1145/3774904.3792795
+会议主页：https://www2026.thewebconf.org/accepted/industry.html

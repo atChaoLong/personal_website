@@ -11,10 +11,11 @@ An independent AI engineer’s portfolio: oversized editorial typography, playfu
 
 ## Reading order
 1. Personal positioning and an interactive particle core.
-2. Four selected projects, each with a schematic based on its existing system flow.
-3. Engineer profile and systems thinking.
-4. Technical stack and experience.
-5. Contact and an interactive pixel signature with spring-based displacement.
+2. A featured PE Workbench case study with four selectable architecture layers, followed by four selected projects.
+3. Two co-authored financial AI papers with publication links and original architecture figures.
+4. Engineer profile and systems thinking.
+5. Technical stack and experience.
+6. Contact and an interactive pixel signature with spring-based displacement.
 
 ## Interaction
 - Particle surface: orbit/sphere buttons, pointer-driven tilt, pause/resume.
@@ -37,6 +38,13 @@ An independent AI engineer’s portfolio: oversized editorial typography, playfu
 ## Content integrity
 - Do not invent project metrics, clients, live status, external demos, or architecture details.
 - Architecture previews are schematics, not product screenshots.
+- KaraVideo follows the inspected implementation: localized Next.js creation forms, server-side session/parameter/credit validation, service-specific task factories and external model adapters. Supabase PostgreSQL separates task definitions and statuses; scheduled polling and provider callbacks update statuses, then Supabase Realtime updates the UI. Separate scheduled jobs handle R2 transfer, FFmpeg thumbnails and watermark processing. Stripe webhooks synchronize subscriptions; failure paths support credit refunds. Depict provider selection, not simultaneous execution of every model, and avoid presenting generated tagging as implemented when the Explore API returns empty tags.
+- FinSAgent's project diagram follows the implementation: LangGraph routing, selected specialist subgraphs running concurrently, shared hybrid retrieval/tools, then synthesis. The two-phase chat path runs a preliminary draft concurrently with the multi-agent analysis. Do not restore the old planning/retrieval/validation-loop schematic from the outdated README. PageIndex and chunk-risk calibration are configurable, not guaranteed active.
+- Real-time ASR's diagram follows the modular Qwen3-ASR path: per-UID Agora PCM, Silero VAD, Qwen3-ASR over an OpenAI-compatible HTTP interface, independent translation and contextual-summary branches, then Agora message delivery and SQLite persistence. Translation is opt-in. HTTP/SSE also exposes summaries and asynchronous meeting finalization; the old FunASR WebSocket entry remains as a separate legacy path. Avoid claiming all results use WebSocket or that summaries must wait for translation.
+- PE Workbench is based on Pi Agent Harness and Pi Web. Describe the inspected PE extensions: project-bound Python ingestion, SQLite evidence, Pi SDK sessions, source inspection, research notes, versioned memos and schema-driven UI. Do not imply that it uses the papers' complete architectures or that the underlying harness was independently built by the portfolio owner.
+- Research attribution is co-authorship as Chaolong Jiang. FinSAgent is accepted at IJCAI 2026's FinLLM Workshop and received that workshop's Best Paper award. VeritasFi is accepted in WWW 2026's Industry Track; its Best Paper award belongs to the AAAI 2026 Workshop on Agentic AI in Financial Services. Keep the venues distinct.
+- Public paper sources: arxiv.org/abs/2607.18102, arxiv.org/abs/2510.10828, dl.acm.org/doi/10.1145/3774904.3792795, finllm.github.io/workshop/, www2026.thewebconf.org/accepted/industry.html. VeritasFi's workshop award is also recorded by co-author Lei Ding at lei-ding07.github.io/.
+- Paper figures retain their original colors on a light surface. Use the native dialog for enlargement, with Escape, focus return and a link to the original image. Workbench layers use explicit buttons and update only on interaction; private data, configuration and source files must never be copied into the portfolio.
 - Preserve parallel relationships (K12 Web + Mini Program + Admin) instead of showing them as sequential pipelines.
 ## Languages and opening
 
