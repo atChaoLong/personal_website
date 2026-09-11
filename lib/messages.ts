@@ -1,4 +1,5 @@
 import { enFeatured, zhFeatured } from "./featured-content";
+import { enKnowledge, zhKnowledge } from "./knowledge-content";
 import { enSystemProjects, zhSystemProjects, enProjectDiagrams, zhProjectDiagrams } from "./project-content";
 
 export type Locale = "zh" | "en";
@@ -6,6 +7,7 @@ export type Locale = "zh" | "en";
 const en = {
   ...enFeatured,
   projectDiagrams: enProjectDiagrams,
+  knowledge: enKnowledge,
   meta: { title: "JCL.AI — AI Full-Stack Engineer", description: "Jiang Chaolong’s portfolio: agentic RAG, multimodal AI, real-time intelligent systems and full-stack product engineering." },
   nav: { label: "Main navigation", home: "JCL.AI home", signatureHome: "atchaolong home", skip: "Skip to selected work", items: ["WORK", "RESEARCH", "ABOUT", "STACK", "LOG"], contact: "LET’S TALK", language: "Language", replay: "Replay opening" },
   hero: { name: "JIANG CHAOLONG", role: "AI ENGINEER", title: ["Making", "intelligence", "work"], statement: "Turning AI potential into products people can use.", sub: "From first principle to final deployment.", action: "EXPLORE MY WORK", tags: ["AI SYSTEMS", "FULL-STACK", "PRODUCT"], location: "BASED IN CHENGDU, CN", scroll: "SCROLL TO DISCOVER", note: "INDEPENDENT MIND. CONNECTED SYSTEMS.", strip: ["AGENTIC SYSTEMS", "MULTIMODAL AI", "REAL-TIME INFRA", "PRODUCT ENGINEERING"] },
@@ -28,6 +30,7 @@ export type Messages = typeof en;
 const zh: Messages = {
   ...zhFeatured,
   projectDiagrams: zhProjectDiagrams,
+  knowledge: zhKnowledge,
   meta: { title: "JCL.AI — 蒋朝龙 · AI 全栈工程师", description: "蒋朝龙的个人作品集：智能体检索增强生成、多模态 AI、实时智能系统与全栈产品工程。" },
   nav: { label: "主导航", home: "JCL.AI 首页", signatureHome: "atchaolong 首页", skip: "跳到项目作品", items: ["作品", "研究", "关于", "技术栈", "经历"], contact: "聊聊合作", language: "语言", replay: "重播开场" },
   hero: { name: "蒋朝龙", role: "AI 全栈工程师", title: ["让智能", "真正", "落地"], statement: "把 AI 的可能，变成真实可用的产品。", sub: "从底层原理，到产品交付。", action: "探索我的作品", tags: ["智能系统", "全栈开发", "产品工程"], location: "中国 · 成都", scroll: "向下探索", note: "独立思考，让系统彼此连接。", strip: ["智能体系统", "多模态 AI", "实时基础设施", "产品工程"] },

@@ -7,7 +7,7 @@ import { LocaleProvider, useLocale } from "./LocaleProvider";
 import SiteNavigation from "./SiteNavigation";
 import { PrivateEquityProject, ResearchSection } from "./FeaturedResearch";
 import OpeningSequence from "./OpeningSequence";
-import SignalCore from "./SignalCore";
+import HeroKnowledgeScene from "./HeroKnowledgeScene";
 import FooterReveal from "./FooterReveal";
 import { AnimatedFlow, SystemsDiagram } from "./AnimatedDiagrams";
 import ProjectArchitecture from "./ProjectArchitecture";
@@ -40,7 +40,7 @@ function PortfolioContent() {
             <div className="hero-actions"><a className="primary-btn" href="#work">{t.hero.action}<ArrowDown size={16} /></a><a className="text-link" href="https://github.com/atchaolong" target="_blank" rel="noreferrer">GitHub<ArrowUpRight size={15} /></a></div>
             <div className="hero-role">{t.hero.tags.map((tag, i) => <Fragment key={i}>{i > 0 && <span>×</span>}{tag}</Fragment>)}</div>
           </div>
-          <SignalCore />
+          <HeroKnowledgeScene suspended={introActive} />
         </div>
         <div className="hero-footer"><span><MapPin size={12} />{t.hero.location}</span><a href="#work">{t.hero.scroll}<ArrowDown size={12} /></a><span className="hero-index">{t.hero.note}</span></div>
       </section>

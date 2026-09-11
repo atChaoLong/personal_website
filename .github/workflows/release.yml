@@ -27,7 +27,7 @@ jobs:
         run: |
           bash -n scripts/deploy.sh
           node scripts/check-public.mjs
-          node --test tests/character-play.test.mjs
+          node --test tests/*.test.mjs
       - name: Build and smoke-test the exact commit
         env:
           REVISION: ${{ github.sha }}

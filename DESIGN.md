@@ -1,16 +1,17 @@
 # JCL.AI — Design direction
 
-An independent AI engineer’s portfolio: oversized editorial typography, playful particle characters, and concrete engineering work. Keep the existing project facts and personal identity.
+An independent AI engineer’s portfolio: oversized editorial typography, an abstract knowledge vortex, and concrete engineering work. Keep the existing project facts and personal identity.
 
 ## Visual system
 - Near-black canvas `#080b0a`, warm-white text `#edf1e9`, mint accent `#bcf8ce`.
 - Inter for headlines and body, DM Mono for navigation and technical metadata; system and Chinese fallbacks must work without Google Fonts.
 - Generous spacing, square corners and fine borders. Use accent color for emphasis, rather than applying the same green treatment everywhere.
 - The contact section reverses to a full mint surface to give the long page a clear ending.
+- The hero centers on an abstract knowledge black hole: a dark event horizon, tilted mint and pale gold accretion disk, fine filaments, and code, equations and research fragments spiraling inward. Use varied typographic treatments with light annotation rules; keep fragments sparse enough to read as individual discoveries. Stagger the arrival cycles, accelerate and shrink fragments near the horizon, and replenish them endlessly. Fine particles connect the distant field to the center. Do not add a person or portrait. Keep the black hole and knowledge field anchored in one square stage across breakpoints, with soft edges that protect the copy and caption. The localized caption expresses lifelong learning. Use one bounded Canvas 2D layer for the knowledge field and cached sprites; retain CSS transforms for the black hole core, with no pointer loop; pause the knowledge flow with its dedicated control, during the opening, offscreen and in background tabs. Reduced motion shows a static composition.
 - Identity: a mint open C orbit, a warm-white J and one satellite point form the custom mark. Pair it with the compact JCL.AI wordmark. The navigation mark and browser icons share the same geometry; interaction is a brief orbit tilt on hover or keyboard focus, with no idle animation. Reduced motion keeps the mark still.
 
 ## Reading order
-1. Personal positioning and an interactive particle core.
+1. Personal positioning and an endless flow of knowledge into an abstract black hole.
 2. A featured PE Workbench case study with four selectable architecture layers, followed by four selected projects.
 3. Two co-authored financial AI papers with publication links and original architecture figures.
 4. Engineer profile and systems thinking.
@@ -18,11 +19,8 @@ An independent AI engineer’s portfolio: oversized editorial typography, playfu
 6. Contact and an interactive pixel signature with spring-based displacement.
 
 ## Interaction
-- Particle surface: orbit/sphere buttons, pointer-driven tilt, pause/resume.
+- Hero: the first nine seconds show only four basic concepts (variables, loops, functions and arrays). Each arrival grows the black hole; galaxies and advanced labels stay hidden until the foundation is complete. After the foundation, bridge concepts enter individually from the perimeter; never reveal a batch of labels already mid-flight. One or two discipline galaxies emerge over 3.2 seconds around 10–15 seconds, followed by their individually staggered topics. The rich late composition still emerges around 35–40 seconds. Each galaxy has four related concepts that orbit it before streaming quickly toward the core. Knowledge accumulation widens both projected discovery distance and physical world extent, smoothly introduces more subjects, and accelerates small concepts using a shared integrated study clock. The first galaxies take roughly 9–11 seconds to learn; mature galaxies retain slower 25–28 second orbits. Their completed absorption triggers a larger increase in knowledge mass, a widening camera view and further discoveries. Each growth event sends out one exploration shockwave from the horizon: a gentle 1.6-second scan for a foundational concept, or a stronger 2.6-second scan for a whole discipline. The front briefly lights nearby stars and labels; reuse one cached sprite on the canvas, freeze it on pause and omit it for reduced motion. The catalog contains four introductory concepts, eight bridge concepts, 48 ambient technical subjects and 12 disciplines/theories; at most six galaxies and 24 related concepts are active together. Continue learning and replenishing subjects without resetting accumulated knowledge. Keep newly discovered galaxies readable as world space expands. A single Canvas 2D renderer caches text and galaxy sprites at up to 30 fps, with at most 24 ambient labels on desktop or 16 on mobile. Pixel ratio is capped at 1.5/1.25 respectively. Avoid per-frame inherited CSS variables, masked DOM particles and SVG path updates. The renderer stops during pause, opening, offscreen and background states. Reduced motion uses a static learning snapshot. Replay restarts the model. See [knowledge universe notes](docs/knowledge-universe.md) for mechanics, tests and terminology sources.
 - Animation stops offscreen and in background tabs. Respect live reduced-motion preferences.
-- Keep the particle rotation, gaze and character pose when pausing; no visual reset.
-- The hero contains only the orbit/sphere characters and their controls, with no coordinate axes or technical space labels. Eyes follow the page pointer. Hover provides restrained anticipation; clicking eyes, nose, mouth, hands or feet triggers a wink, boop, whistle, high five or two-step respectively. Body clicks cycle through hop, proud pose and spin; double clicking spins, and holding the body gives a hug. Every action ends and settles instead of sharing a looping body shake. Empty canvas clicks do nothing.
-- Small trick buttons expose the same actions to touch and keyboard users. Enter or Space on the character cycles body tricks. Preserve native vertical touch scrolling; dragging, scrolling or leaving cancels a pending hold. Pausing freezes the current pose and disables trick buttons.
 - Project details use native disclosure elements with keyboard support.
 - All links and controls have visible keyboard focus. Mobile navigation remains accessible.
 - The navigation stays fixed above the page and reserves its original height in the hero. Once that original space leaves the viewport, it becomes a compact dark glass bar and replaces JCL.AI with a custom lowercase atchaolong wordmark: mint at, warm-white circular letterforms and an extended g signature tail. The change reverses at the top, reserves the same brand width and respects reduced motion. Anchor links account for the fixed header; the opening still covers and disables navigation.
@@ -32,7 +30,7 @@ An independent AI engineer’s portfolio: oversized editorial typography, playfu
 
 ## Responsive
 - Desktop: two-column hero and projects.
-- Mobile: stacked hero, compact particle surface, single-column projects, two-column skill grid.
+- Mobile: stacked hero with a centered knowledge vortex, single-column projects, two-column skill grid.
 - Avoid horizontal overflow, including at 320px viewport width.
 
 ## Content integrity
