@@ -183,7 +183,11 @@ footer#contact>p { font-size:13px; color:#42634d; position:relative; }
 footer#contact .primary-btn { background:#14271b; border-color:#14271b; color:#e1fce9; }
 footer#contact .ghost-btn { border-color:#789f83; }
 .footer-actions { position:relative; z-index:1; }
-.footer-bottom { display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px; border-top:1px solid #749980; margin-top:85px; padding-top:24px; font:9px var(--mono); color:#3c6149; }
+.footer-bottom { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; border-top:1px solid #749980; margin-top:85px; padding-top:24px; font:9px var(--mono); color:#3c6149; }
+.footer-icp { display:inline-flex; align-items:center; min-height:32px; font:11px/1.6 var(--mono); text-underline-offset:4px; }
+.footer-icp:hover,.footer-icp:focus-visible { color:#12251a; text-decoration:underline; }
+.footer-icp:focus-visible { outline-color:#12251a; }
+@media(pointer:coarse) { .footer-icp { min-height:44px; } }
 .footer-network { display:none; }
 .signature-footer { position:relative; overflow:clip; padding:18px 0 14px; border-top:1px solid var(--line); background:radial-gradient(ellipse at 50% 60%,#13291b66,transparent 65%),var(--bg); }
 /* The contact panel is the curtain; the signature stays beneath its edge.
