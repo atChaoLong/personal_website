@@ -2,15 +2,15 @@
 
 import { Fragment, useRef, useState } from "react";
 import { MotionConfig, motion } from "framer-motion";
-import { ArrowDown, ArrowUpRight, Braces, Database, Github, Mail, MapPin, Network, Plus, Radio, Terminal, Workflow } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Braces, Database, Github, Mail, MapPin, Network, Radio, Terminal, Workflow } from "lucide-react";
 import { LocaleProvider, useLocale } from "./LocaleProvider";
 import SiteNavigation from "./SiteNavigation";
 import { PrivateEquityProject, ResearchSection } from "./FeaturedResearch";
 import OpeningSequence from "./OpeningSequence";
 import HeroKnowledgeScene from "./HeroKnowledgeScene";
 import FooterReveal from "./FooterReveal";
-import { AnimatedFlow, SystemsDiagram } from "./AnimatedDiagrams";
-import ProjectArchitecture from "./ProjectArchitecture";
+import { SystemsDiagram } from "./AnimatedDiagrams";
+import ProjectScrollShowcase from "./ProjectScrollShowcase";
 import type { Locale } from "@/lib/messages";
 
 const icons = [Network, Workflow, Braces, Terminal, Database, Radio];
@@ -50,17 +50,7 @@ function PortfolioContent() {
         <div className="section-label"><span>{t.work.label}</span><span>{t.work.meta}</span></div>
         <div className="section-heading"><h2>{t.work.title[0]}<br /><em>{t.work.title[1]}</em></h2><p>{t.work.description}</p></div>
         <PrivateEquityProject />
-        <div className="projects">{t.projects.map((project, i) => <article className="project" key={i} id={`project-${i + 1}`}>
-          <div className={`project-visual${project.architecture ? " project-visual-detailed" : ""}`} aria-label={`${project.title} ${t.work.overview}`}>
-            <div className="project-visual-label"><span>{t.work.system} / {number(i)}</span><span>{t.work.diagram}</span></div>
-            {project.architecture ? <ProjectArchitecture kind={project.architecture} /> : <AnimatedFlow steps={project.steps} parallel={project.parallel} />}
-            <div className="project-visual-note">{project.kicker}</div>
-          </div>
-          <div className="project-main"><span className="project-kicker">{t.work.project} / {number(i)}</span><h3>{project.title}</h3><p>{project.description}</p>
-            <div className="stack">{project.stack.map((item, n) => <span key={n}>{item}</span>)}</div>
-            <details className="project-details"><summary>{t.work.details}<Plus size={16} /></summary><dl><dt>{t.work.contribution}</dt><dd>{project.role}</dd><dt>{t.work.flow}</dt><dd>{project.flow ?? project.steps.join(project.parallel ? " + " : " → ")}</dd></dl>{project.engineering && <div className="project-engineering">{project.engineering.map(item => <section key={item.title}><h4>{item.title}</h4><p>{item.description}</p></section>)}{project.note && <p className="project-implementation-note">{project.note}</p>}</div>}</details>
-          </div>
-        </article>)}</div>
+        <ProjectScrollShowcase />
       </div></section>
 
       <ResearchSection />

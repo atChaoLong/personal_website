@@ -142,7 +142,6 @@ h2 em { color:var(--green); font-style:normal; }
 .skill>div { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:9px; color:#97a99c; font:11px/1.7 var(--mono); }
 .skill>div span:not(:last-child):after { content:" /"; color:#455c4c; }
 .work-section { background:#111813; border-block:1px solid var(--line); }
-.projects { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; gap:24px; }
 .project { border:1px solid #354239; background:#0c110e; transition:border-color .2s; min-width:0; }
 .project:hover { border-color:#6b8b74; }
 .project-visual { height:225px; padding:25px; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; background:radial-gradient(ellipse at 50% 80%,#3f75532a,transparent 75%),linear-gradient(#a0d4af05 1px,transparent 1px),linear-gradient(90deg,#a0d4af05 1px,transparent 1px); background-size:auto,24px 24px,24px 24px; border-bottom:1px solid var(--line); }
@@ -247,7 +246,7 @@ footer#contact .ghost-btn { border-color:#789f83; }
   .systems-section { grid-template-columns:1fr; gap:35px; padding:25px; }.system-visual { order:2; height:290px; }.system-copy { order:1; }
   .system-visual:after { width:270px; height:270px; }.system-node { padding:9px; font-size:8px; }
   .skills { grid-template-columns:repeat(2,1fr); }.skill { padding:18px; min-height:195px; }.skill h3 { font-size:10px; }.skill>div { font-size:10px; }
-  .projects { grid-template-columns:1fr; gap:24px; }.project-visual { height:205px; padding:20px; }.architecture span { font-size:8px; padding:13px 6px; }.project-main { padding:23px; }.project-main>p { min-height:0; }
+  .project-visual { height:205px; padding:20px; }.architecture span { font-size:8px; padding:13px 6px; }.project-main { padding:23px; }.project-main>p { min-height:0; }
   .timeline-list>div { grid-template-columns:55px 20px 1fr; gap:12px; }.timeline-list p { grid-column:3; }.timeline-list b { font-size:12px; }.timeline-list time { font-size:12px; }
   footer#contact { padding:65px 20px 25px; }.footer-actions { flex-wrap:wrap; gap:14px; }.footer-actions .primary-btn { font-size:10px; gap:15px; }.footer-bottom { margin-top:65px; font-size:8px; }.footer-bottom>a:last-child { width:100%; }
   .signature-footer { padding:14px 0 12px; }.signature-meta,.signature-caption { margin-inline:20px; font-size:7px; gap:10px; }.signature-caption>span:last-child { display:none; }.pixel-text { height:clamp(70px,17vw,130px); }
