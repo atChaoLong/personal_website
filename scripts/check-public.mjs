@@ -18,6 +18,9 @@ const rules = [
 let failures = 0;
 function check(path, content, object = '') {
   const label = object ? `${object.slice(0, 12)}:${path}` : path;
+  if (/\.(?:sqlite3?|db)(?:-(?:wal|shm))?$/.test(path)) {
+    console.error(`${label}: runtime database file`); failures++;
+  }
   if (/(^|\/)(?:\.env(?:\..+)?|[^/]+\.(?:key|pem|pfx|p12))$/.test(path) && !path.endsWith('.env.example')) {
     console.error(`${label}: environment/certificate file`); failures++;
   }

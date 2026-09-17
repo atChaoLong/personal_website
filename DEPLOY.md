@@ -22,6 +22,8 @@ bash scripts/deploy.sh
 
 ## GitHub 自动构建
 
+留言板使用 Compose 的 `guestbook-data` 命名数据卷，更新容器不会清空 SQLite。第一次部署包含留言板的版本时会自动创建数据卷。不要使用 `docker compose down -v` 删除访客数据；备份、删留言和代理来源设置见 [留言板运维说明](docs/guestbook.md)。
+
 `.github/workflows/release.yml` 在 main 推送后运行：
 
 1. 检查公开文件和测试。

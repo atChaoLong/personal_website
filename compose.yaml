@@ -5,6 +5,12 @@ services:
     image: ${APP_IMAGE:?Run bash scripts/deploy.sh to select a release image}
     restart: unless-stopped
     init: true
+    environment:
+      GUESTBOOK_DB_PATH: /app/data/guestbook.sqlite
+      # The gateway overwrites X-Real-IP; this service has no public host port.
+      GUESTBOOK_TRUST_PROXY: "1"
+    volumes:
+      - guestbook-data:/app/data
     networks:
       ingress:
         aliases:
@@ -14,6 +20,9 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+volumes:
+  guestbook-data:
 
 networks:
   ingress:

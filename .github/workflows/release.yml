@@ -35,7 +35,7 @@ jobs:
           docker build --platform linux/amd64 --label "org.opencontainers.image.revision=$REVISION" -t "jcl-portfolio:$REVISION" .
           docker run -d --name smoke "jcl-portfolio:$REVISION"
           for attempt in $(seq 1 60); do
-            if docker exec smoke node -e "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"; then
+            if docker exec smoke node -e "Promise.all(['/', '/api/guestbook'].map(p=>fetch('http://127.0.0.1:3000'+p))).then(rs=>process.exit(rs.every(r=>r.ok)?0:1)).catch(()=>process.exit(1))"; then
               docker rm -f smoke
               exit 0
             fi

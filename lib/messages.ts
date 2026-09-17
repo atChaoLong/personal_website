@@ -1,3 +1,4 @@
+import { enGuestbook, zhGuestbook } from "./guestbook-messages";
 import { enFeatured, zhFeatured } from "./featured-content";
 import { enKnowledge, zhKnowledge } from "./knowledge-content";
 import { enSystemProjects, zhSystemProjects, enProjectDiagrams, zhProjectDiagrams } from "./project-content";
@@ -6,6 +7,7 @@ export type Locale = "zh" | "en";
 
 const en = {
   ...enFeatured,
+  guestbook: enGuestbook,
   projectDiagrams: enProjectDiagrams,
   knowledge: enKnowledge,
   meta: { title: "JCL.AI — AI Full-Stack Engineer", description: "Jiang Chaolong’s portfolio: agentic RAG, multimodal AI, real-time intelligent systems and full-stack product engineering." },
@@ -22,13 +24,14 @@ const en = {
   experience: { label: "05 / SYSTEM LOG", meta: "ENGINEERING HISTORY", title: ["From code", "to systems."], description: "Growing from implementation to systems design, while bringing new AI capabilities into useful products.", rows: [{ year: "2026", title: "Agentic Systems", description: "Focused on agents, RAG, multimodal systems and production AI products." }, { year: "2025", title: "AI Product / Full-Stack", description: "Building financial RAG, real-time ASR, AI video and recruitment projects." }, { year: "2024", title: "Software → Artificial Intelligence", description: "Moving into AI engineering from a solid software foundation." }] },
   contact: { label: "OPEN TO COLLABORATION", title: ["Let’s build something", "intelligent."], description: "Have an ambitious product, an AI system, or a difficult engineering problem?", action: "START A CONVERSATION", copyright: "JIANG CHAOLONG", back: "BACK TO TOP ↑" },
   core: { interact: "Interactive particle character. Click a body part to play; Enter or Space tries a new body trick.", hint: "Hover to meet · tap different parts · hold the body for a hug", tricksLabel: "Try a little trick", tricks: { wink: "Wink", highfive: "High five", dance: "Two-step", spin: "Spin", cuddle: "Hug" }, reactions: { body: "WHAT ARE YOU UP TO?", eyes: "LOOKING AT ME?", nose: "EASY ON THE NOSE…", mouth: "GOT A TUNE?", hands: "UP HIGH?", feet: "SHALL WE DANCE?", wink: "OUR LITTLE SECRET ;)", boop: "BOOP!", highfive: "NAILED IT!", dance: "ONE, TWO. ONE, TWO.", whistle: "♪ JUST VIBING ♪", hop: "A LITTLE HOP!", spin: "TA-DA!", proud: "PRETTY COOL, HUH?", cuddle: "OKAY, ONE LITTLE HUG ♥" }, modes: "Particle shape", orbit: "ORBIT", sphere: "SPHERE", play: "Play particle animation", pause: "Pause particle animation" },
-  signature: { label: "Interactive pixel signature", human: "A HUMAN BEHIND THE SYSTEMS", play: "PLAY A LITTLE.", desktop: "MOVE TO DISRUPT · CLICK TO PULSE", touch: "TAP THE LETTERS TO SEND A PULSE", reduced: "BUILT WITH INTENTION.", home: "EVERY PIXEL FINDS ITS WAY HOME.", action: "ATCHAOLONG interactive signature. Click, Enter or Space to send a particle pulse.", static: "ATCHAOLONG pixel signature. Reduced motion enabled." },
+  signature: { label: "Interactive pixel signature", action: "ATCHAOLONG interactive signature. Click, Enter or Space to send a particle pulse.", static: "ATCHAOLONG pixel signature. Reduced motion enabled." },
   diagram: { play: "Play diagram animation", pause: "Pause diagram animation", sequence: "SEQUENTIAL FLOW", parallel: "PARALLEL SYSTEMS", system: "Context, tools, state and streaming working with the AI core" },
   intro: { tools: ["SEARCH", "MEMORY", "TOOLS", "CODE", "VISION", "CONTEXT"], agent: "AI AGENT", resolved: "THE CONNECTION BECOMES CLEAR", assemble: ["EVERY SIGNAL LEAVES A TRACE", "ONE CONNECTION LEADS TO ANOTHER", "THE PATTERN EMERGES"], assemblyLabel: "TRACING INTELLIGENCE", label: "Portfolio opening", skip: "Skip intro", replay: "Replay intro", line: "IDEAS BECOME SYSTEMS.", caption: "JIANG CHAOLONG / AI ENGINEER", stages: ["CONNECTING IDEAS", "SHAPING INTELLIGENCE", "READY TO BUILD"] },
 };
 export type Messages = typeof en;
 const zh: Messages = {
   ...zhFeatured,
+  guestbook: zhGuestbook,
   projectDiagrams: zhProjectDiagrams,
   knowledge: zhKnowledge,
   meta: { title: "JCL.AI — 蒋朝龙 · AI 全栈工程师", description: "蒋朝龙的个人作品集：智能体检索增强生成、多模态 AI、实时智能系统与全栈产品工程。" },
@@ -45,7 +48,7 @@ const zh: Messages = {
   experience: { label: "05 / 成长记录", meta: "工程经历", title: ["从代码，", "走向系统。"], description: "持续从工程实现走向系统设计，也持续把新的 AI 能力带进可用产品。", rows: [{ year: "2026", title: "智能体系统", description: "聚焦智能体、检索增强、多模态与生产级 AI 产品。" }, { year: "2025", title: "AI 产品 / 全栈开发", description: "金融检索增强、实时语音识别、AI 视频与招聘项目持续落地。" }, { year: "2024", title: "软件工程 → 人工智能", description: "从坚实的软件工程基础进入 AI 工程方向。" }] },
   contact: { label: "期待与你合作", title: ["一起创造", "有用的智能。"], description: "有一个大胆的产品想法、AI 系统，或值得挑战的工程问题？", action: "开启对话", copyright: "蒋朝龙", back: "返回顶部 ↑" },
   core: { interact: "粒子小伙伴，点击不同部位玩耍；Enter 或空格尝试一个身体小动作。", hint: "悬停打招呼 · 点点不同部位 · 按住身体抱一下", tricksLabel: "试个小动作", tricks: { wink: "眨个眼", highfive: "击个掌", dance: "跳两步", spin: "转一圈", cuddle: "抱一下" }, reactions: { body: "你在打什么主意？", eyes: "在看我吗？", nose: "鼻子要轻一点哦…", mouth: "要来一段小曲吗？", hands: "准备击掌？", feet: "一起跳两步？", wink: "这是我们的小秘密 ;)", boop: "啵！", highfive: "默契满分！", dance: "左一下，右一下。", whistle: "♪ 哼一首小曲 ♪", hop: "轻轻蹦一下！", spin: "转完啦，没晕！", proud: "怎么样，我挺酷吧？", cuddle: "好吧，给你抱一下 ♥" }, modes: "粒子形态", orbit: "环形", sphere: "球形", play: "播放粒子动画", pause: "暂停粒子动画" },
-  signature: { label: "交互像素签名", human: "系统背后，是一个创造者。", play: "动手试试看。", desktop: "划过打散字形 · 点击释放脉冲", touch: "轻触文字，释放粒子脉冲", reduced: "每一处，皆有用心。", home: "每一个像素，终将归位。", action: "ATCHAOLONG 交互签名，点击或按 Enter、空格释放粒子脉冲", static: "ATCHAOLONG 像素签名，已减少动态效果" },
+  signature: { label: "交互像素签名", action: "ATCHAOLONG 交互签名，点击或按 Enter、空格释放粒子脉冲", static: "ATCHAOLONG 像素签名，已减少动态效果" },
   diagram: { play: "播放图表动画", pause: "暂停图表动画", sequence: "顺序处理流程", parallel: "并行产品体系", system: "上下文、工具、状态与数据流协同连接智能核心" },
   intro: { tools: ["搜索", "记忆", "工具", "代码", "视觉", "上下文"], agent: "AI 智能体", resolved: "一切，终于相连", assemble: ["每个信号，都留下线索", "循着关联，找到下一条线索", "答案，在联系中浮现"], assemblyLabel: "循迹，见智能", label: "作品集开场", skip: "跳过开场", replay: "重播开场", line: "让想法，成为系统。", caption: "蒋朝龙 / AI 全栈工程师", stages: ["连接想法", "构建智能", "即刻启程"] },
 };

@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import SignatureFooter from "./SignatureFooter";
+import MeteorSignatureBridge from "./MeteorSignatureBridge";
 
 export default function FooterReveal({ children }: { children: ReactNode }) {
   return <div className="footer-reveal">
@@ -13,6 +14,7 @@ export default function FooterReveal({ children }: { children: ReactNode }) {
         event.currentTarget.parentElement?.scrollIntoView({ block: "end", behavior: "instant" });
       }
     }}><SignatureFooter /></div>
+    <MeteorSignatureBridge />
     <span id="signature" className="signature-anchor" aria-hidden="true" />
   </div>;
 }

@@ -40,3 +40,13 @@ certs/
 *.tar.gz
 *.zip
 deploy.local/
+
+# Visitor messages and live SQLite journals are private runtime data.
+data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3
+*.db
+*.db-wal
+*.db-shm
