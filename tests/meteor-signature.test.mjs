@@ -1,6 +1,53 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { meteorTrajectory, signatureLanding, signatureFlightPoint } from "../lib/meteor-signature.ts";
+import { arrangeMeteorLanes } from "../lib/guestbook.ts";
+
+test("one real message always occupies exactly one lane, regardless of the display budget", () => {
+  const message = { id: 1, name: "Visitor", body: "Only message", createdAt: 1 };
+  for (const limit of [2, 4, 8]) {
+    let lanes = [];
+    for (let poll = 0; poll < 5; poll++) {
+      lanes = arrangeMeteorLanes([message], lanes, limit);
+      assert.deepEqual(lanes, [message]);
+    }
+    assert.deepEqual(arrangeMeteorLanes([message], [message, message, message], limit), [message], "old duplicated lanes are removed");
+  }
+});
+
+test("a sparse guestbook never fills spare lanes by duplicating messages", () => {
+  const messages = [1, 2].map(id => ({ id, name: "Visitor", body: `Message ${id}`, createdAt: id }));
+  const lanes = arrangeMeteorLanes(messages, [], 4);
+  assert.deepEqual(lanes, messages);
+  assert.deepEqual(arrangeMeteorLanes([], lanes, 4), []);
+  assert.deepEqual(arrangeMeteorLanes(messages, lanes, 8), messages, "reduced motion also uses unique messages");
+  const removed = arrangeMeteorLanes(messages.slice(1), lanes, 4);
+  assert.deepEqual(removed, messages.slice(1), "deleted messages leave the sky without adding copies");
+});
+
+test("foreground captions remain distinct as new messages fill the sky", () => {
+  const messages = Array.from({ length: 8 }, (_, id) => ({ id, name: "", body: String(id), createdAt: id }));
+  const sparse = arrangeMeteorLanes(messages.slice(0, 1), [], 4);
+  const full = arrangeMeteorLanes(messages, sparse, 4);
+  assert.equal(full.length, 4);
+  assert.equal(new Set(full.map(message => message.id)).size, 4);
+  assert.equal(full[0].id, sparse[0].id, "polling preserves the visible first message");
+  const phone = arrangeMeteorLanes(messages, full, 2);
+  assert.deepEqual(phone, full.slice(0, 2), "smaller viewports reduce the number of lanes");
+});
+
+test("decorative distant traces travel faster than readable message meteors", () => {
+  for (const width of [320, 1440]) {
+    for (let lane = 0; lane < 8; lane++) {
+      const foreground = meteorTrajectory(lane, 140, width, 380);
+      const distant = meteorTrajectory(lane, 100, width, 380, true);
+      const longer = meteorTrajectory(lane, 250, width, 380, true);
+      assert.ok(distant.duration < foreground.duration / 2);
+      assert.equal(distant.duration, longer.duration);
+      assert.equal(distant.impactX, longer.impactX);
+    }
+  }
+});
 
 test("cycling to a longer message does not change a lane clock or head position", () => {
   for (let lane = 0; lane < 8; lane++) {

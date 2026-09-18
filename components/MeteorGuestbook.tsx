@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import { ArrowUpRight, Pause, Play, Send, Sparkles, X } from "lucide-react";
-import { characterCount, meteorLength, MESSAGE_LIMIT, NAME_LIMIT, type GuestMessage, type GuestPage, type GuestErrorCode } from "@/lib/guestbook";
+import { arrangeMeteorLanes, characterCount, meteorLength, MESSAGE_LIMIT, NAME_LIMIT, type GuestMessage, type GuestPage, type GuestErrorCode } from "@/lib/guestbook";
 import { useLocale } from "./LocaleProvider";
 import GuestbookNightSky from "./GuestbookNightSky";
 import { METEOR_ACTIVITY, METEOR_LANDING, meteorAppearance, meteorTrajectory } from "@/lib/meteor-signature";
 import "./MeteorGuestbook.css";
 
-type Selection = { message: GuestMessage; pinned: boolean };
+type Selection = { message: GuestMessage; lane: number; pinned: boolean };
 const dateLabel = (date: number, locale: string) => new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en", { year: "numeric", month: "short", day: "numeric" }).format(date);
 
 export default function MeteorGuestbook() {
@@ -45,7 +45,8 @@ export default function MeteorGuestbook() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [archiveError, setArchiveError] = useState(false);
   const count = characterCount(body);
-  const laneCount = size.width < 600 ? 4 : 8;
+  const maxMeteors = size.width < 600 ? 2 : 4;
+  const laneCount = reduced ? maxMeteors * 2 : maxMeteors;
   const running = nearby && !hidden && !paused && !reduced && mode === null;
 
   useEffect(() => {
@@ -103,18 +104,16 @@ export default function MeteorGuestbook() {
 
   useEffect(() => {
     if (!page) return;
-    setLanes(previous => {
-      const available = new Map(page.messages.map(message => [message.id, message]));
-      const next = previous.filter(message => available.has(message.id)).map(message => available.get(message.id)!).slice(0, laneCount);
-      for (const message of page.messages) { if (next.length >= laneCount) break; if (!next.some(item => item.id === message.id)) next.push(message); }
-      return next;
-    });
-    setSelection(previous => previous && page.messages.some(message => message.id === previous.message.id) ? previous : null);
+    setLanes(previous => arrangeMeteorLanes(page.messages, previous, laneCount));
   }, [page, laneCount]);
+
+  useEffect(() => {
+    setSelection(previous => previous && lanes[previous.lane]?.id === previous.message.id ? previous : null);
+  }, [lanes]);
 
   useLayoutEffect(() => {
     if (!selection || !popup.current || !sky.current) return;
-    const target = meteorNodes.current.get(selection.message.id);
+    const target = meteorNodes.current.get(selection.lane);
     if (!target) return;
     const bounds = sky.current.getBoundingClientRect(), meteor = target.getBoundingClientRect(), card = popup.current;
     const left = Math.max(12, Math.min(bounds.width - card.offsetWidth - 12, meteor.right - bounds.left - card.offsetWidth * .7));
@@ -133,7 +132,7 @@ export default function MeteorGuestbook() {
 
   function clearDismiss() { if (dismiss.current) clearTimeout(dismiss.current); }
   function releaseSoon() { clearDismiss(); dismiss.current = setTimeout(() => setSelection(current => current?.pinned ? current : null), 160); }
-  function catchMeteor(message: GuestMessage, pinned: boolean) { clearDismiss(); setSelection(current => current?.pinned && !pinned ? current : { message, pinned }); }
+  function catchMeteor(message: GuestMessage, lane: number, pinned: boolean) { clearDismiss(); setSelection(current => current?.pinned && !pinned ? current : { message, lane, pinned }); }
   function cycleLane(index: number) {
     if (!page?.messages.length) return;
     setLanes(previous => {
@@ -143,11 +142,11 @@ export default function MeteorGuestbook() {
         const candidate = page.messages[(cycle.current++) % page.messages.length];
         if (!occupied.has(candidate.id)) { next = candidate; break; }
       }
-      return previous.map((message, lane) => lane === index ? next : message);
+      return next === previous[index] ? previous : previous.map((message, lane) => lane === index ? next : message);
     });
   }
   function landMeteor(message: GuestMessage, index: number) {
-    if (!running || selection?.message.id === message.id || !sky.current) return;
+    if (!running || selection?.lane === index || !sky.current) return;
     const bounds = sky.current.getBoundingClientRect();
     const tailLength = meteorLength(message.body, size.width);
     const { impactX, slope, drift, duration } = meteorTrajectory(index, tailLength, size.width, size.height);
@@ -197,13 +196,22 @@ export default function MeteorGuestbook() {
     <div className="guestbook-toolbar"><span className="guestbook-count"><i />{page?.total ?? "—"} {copy.count}</span><span className="guestbook-hint">{copy.hint}</span><button type="button" className="guestbook-browse" disabled={!page} onClick={() => open("read")}>{copy.browse}<ArrowUpRight size={12} /></button><button className="guestbook-pause" type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused} aria-label={paused ? copy.play : copy.pause}>{paused ? <Play size={13} /> : <Pause size={13} />}</button></div>
     <p className="guestbook-announcement" role="status">{sent ? copy.success : ""}</p>
     <div ref={sky} className="guestbook-sky" data-running={running} data-reduced={reduced} onKeyDown={event => { if (event.key === "Escape") setSelection(null); }}>
+      {!reduced && <div className="guestbook-light-traces" aria-hidden="true">{Array.from({ length: maxMeteors }, (_, index) => {
+        const length = size.width < 600 ? 72 + index * 12 : 90 + index * 22;
+        const { startX, endX, drift, angle, duration } = meteorTrajectory(index + 4, length, size.width, size.height, true);
+        const appearance = meteorAppearance(index + 2);
+        const style = { "--meteor-length": `${length}px`, "--meteor-start": `${startX}px`, "--meteor-end": `${endX}px`, "--meteor-y": "-70px", "--meteor-drift": `${drift}px`, "--meteor-duration": `${duration}s`, "--meteor-delay": `${-duration * ((index * .23 + .12) % 1)}s`, "--meteor-angle": `${angle}deg`, "--meteor-tone": appearance.tone, "--meteor-brightness": appearance.brightness * .7 } as CSSProperties;
+        return <span key={index} className="guestbook-light-trace" style={style}><span className="meteor-trail"><i /><b /></span></span>;
+      })}</div>}
       {lanes.map((message, index) => {
+        const held = selection?.lane === index;
         const length = meteorLength(message.body, size.width);
         const { startX, endX, drift, angle, duration, impactX } = meteorTrajectory(index, length, size.width, size.height);
         const appearance = meteorAppearance(index);
         const style = { "--meteor-length": `${length}px`, "--meteor-start": `${startX}px`, "--meteor-end": `${endX}px`, "--meteor-y": "-70px", "--meteor-drift": `${drift}px`, "--meteor-duration": `${duration}s`, "--meteor-delay": `${-duration * ((index * .18 + .35) % 1)}s`, "--meteor-angle": `${angle}deg`, "--meteor-tone": appearance.tone, "--meteor-brightness": appearance.brightness } as CSSProperties;
-        return <button key={`${index}-${index === 0 ? launch : 0}`} ref={node => { if (node) meteorNodes.current.set(message.id, node); else meteorNodes.current.delete(message.id); }} className="guestbook-meteor" type="button" style={style} tabIndex={reduced ? 0 : -1} data-depth={appearance.depth} data-caption-side={impactX < size.width * .46 ? "right" : "left"} data-message-id={message.id} data-held={selection?.message.id === message.id} aria-label={`${message.name || copy.visitor}: ${message.body}`} aria-expanded={selection?.message.id === message.id} onAnimationIteration={event => { if (event.target !== event.currentTarget) return; landMeteor(message, index); cycleLane(index); }} onPointerEnter={event => { if (event.pointerType === "mouse") catchMeteor(message, false); }} onPointerLeave={releaseSoon} onFocus={() => catchMeteor(message, false)} onBlur={releaseSoon} onClick={() => catchMeteor(message, true)}>
-          <span className="meteor-caption"><span className="meteor-preview">{message.body.replace(/\s+/g, " ")}</span><span className="meteor-author">{message.name || copy.visitor}</span></span><span className="meteor-trail" aria-hidden="true"><i /><b /></span>
+        const preview = message.body.replace(/\s+/g, " ");
+        return <button key={`${index}-${index === 0 ? launch : 0}`} ref={node => { if (node) meteorNodes.current.set(index, node); else meteorNodes.current.delete(index); }} className="guestbook-meteor" type="button" style={style} tabIndex={reduced ? 0 : -1} data-depth={appearance.depth} data-caption-side={impactX < size.width * .46 ? "right" : "left"} data-message-id={message.id} data-held={held} aria-label={`${message.name || copy.visitor}: ${message.body}`} aria-expanded={held} onAnimationIteration={event => { if (event.target !== event.currentTarget) return; landMeteor(message, index); cycleLane(index); }} onPointerEnter={event => { if (event.pointerType === "mouse") catchMeteor(message, index, false); }} onPointerLeave={releaseSoon} onFocus={() => catchMeteor(message, index, false)} onBlur={releaseSoon} onClick={() => catchMeteor(message, index, true)}>
+          <span className="meteor-caption"><span className="meteor-preview">{preview}</span><span className="meteor-author">{message.name || copy.visitor}</span></span><span className="meteor-trail" aria-hidden="true"><i /><b /></span>
         </button>;
       })}
       {!page?.messages.length && <div className="guestbook-empty"><span className="guestbook-beacon" aria-hidden="true"><i /></span><p>{loadState === "loading" ? copy.loading : loadState === "error" ? copy.loadError : copy.empty}</p>{loadState === "error" && <button type="button" onClick={() => void fetchLatest()}>{copy.retry}</button>}</div>}

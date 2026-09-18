@@ -9,13 +9,15 @@ export function meteorAppearance(index: number) {
   return { depth, tone: depth === 1 ? "188,248,206" : "187,221,244", brightness: depth === 2 ? .58 : depth === 1 ? 1 : .8 };
 }
 
-export function meteorTrajectory(index: number, length: number, width: number, height: number) {
+export function meteorTrajectory(index: number, length: number, width: number, height: number, distant = false) {
   const impactX = width * (.3 + ((index * .227) % .61));
   const drift = height + 42; // The head starts 42px above the sky and ends on its lower edge.
   const travel = Math.min(width * .4, drift * .7);
   const endX = impactX - length + 8;
   // A lane keeps its clock when its next message has a different tail length.
-  const duration = [24, 19, 29, 22, 26, 20, 31, 23][index % 8] + (width < 600 ? 2 : 0);
+  const duration = distant
+    ? [4.2, 5.7, 3.9, 5.1, 4.6, 6.2, 4.4, 5.4][index % 8] + (width < 600 ? .7 : 0)
+    : [15, 12, 18, 14, 16, 13, 19, 15][index % 8] + (width < 600 ? 2 : 0);
   return { startX: endX - travel, endX, drift, impactX, duration, slope: travel / drift, angle: Math.atan2(drift, travel) * 180 / Math.PI };
 }
 

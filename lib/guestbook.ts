@@ -6,6 +6,19 @@ export const characterCount = (value: string) => Array.from(value).length;
 export function meteorLength(body: string, width: number) {
   return 100 + Math.min(1, characterCount(body) / MESSAGE_LIMIT) * (Math.min(390, width * .7) - 100);
 }
+// Preserve occupied lanes while keeping every visible message unique.
+export function arrangeMeteorLanes(messages: GuestMessage[], previous: GuestMessage[], limit: number) {
+  if (!messages.length) return [];
+  const available = new Map(messages.map(message => [message.id, message]));
+  const next: GuestMessage[] = [];
+  for (let lane = 0; lane < Math.min(limit, available.size); lane++) {
+    const existing = available.get(previous[lane]?.id);
+    const unused = (message: GuestMessage) => !next.some(item => item.id === message.id);
+    const candidate = existing && unused(existing) ? existing : messages.find(unused);
+    if (candidate) next.push(candidate);
+  }
+  return next;
+}
 export type GuestErrorCode = "invalid" | "too_large" | "origin" | "rate_limit" | "conflict" | "unavailable";
 export class GuestbookError extends Error {
   code: GuestErrorCode;
